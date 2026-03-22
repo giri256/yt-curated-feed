@@ -1,0 +1,7 @@
+/* content.css — loaded alongside content.js on youtube.com */
+
+/* Ensure our host element doesn't accidentally inherit YT's font changes */
+#ytcf-host {
+  all: initial;
+  display: block;
+}

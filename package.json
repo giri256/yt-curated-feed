@@ -1,0 +1,12 @@
+{
+  "name": "yt-curated-feed",
+  "version": "2.0.0",
+  "description": "Chrome extension: curated YouTube feed from selected subscriptions (no bundler required)",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

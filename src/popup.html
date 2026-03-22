@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YT Curated Feed</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #0f0f0f; --surface:  #1a1a1a; --surface2: #242424;
+      --border:   #2e2e2e; --accent:   #ff0000; --accent2:  #ff4444;
+      --text:     #f1f1f1; --muted:    #aaaaaa; --radius:   8px;
+    }
+    html, body {
+      width: 420px; height: 620px; overflow: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    body { display: block; }
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .logo {
+      width: 28px; height: 28px; border-radius: 6px; background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.5px;
+    }
+    .header-info { flex: 1; }
+    .header-title { font-size: 15px; font-weight: 700; }
+    .header-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    /* View visibility */
+    .view { display: none; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+    .view.visible { display: flex; min-height: 0; }
+    /* ── ONBOARDING ── */
+    .onboard-body {
+      padding: 28px 24px 24px; display: flex; flex-direction: column;
+      align-items: center; gap: 14px; text-align: center;
+    }
+    .onboard-icon { font-size: 40px; }
+    .onboard-title { font-size: 16px; font-weight: 700; }
+    .onboard-desc { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 320px; }
+    .onboard-steps {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      text-align: left; display: flex; flex-direction: column; gap: 8px;
+    }
+    .step { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .step-num {
+      width: 20px; height: 20px; flex-shrink: 0; background: var(--accent); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff;
+    }
+    .btn-primary {
+      width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none;
+      border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+    /* ── SCRAPING ── */
+    .scraping-body {
+      padding: 32px 24px 28px; display: flex; flex-direction: column;
+      align-items: center; gap: 16px; text-align: center;
+    }
+    .scraping-spinner {
+      width: 44px; height: 44px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .scraping-title { font-size: 15px; font-weight: 700; }
+    .scraping-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; max-width: 300px; }
+    .scraping-count {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600;
+    }
+    .scraping-count span { color: var(--accent); font-size: 16px; }
+    .scraping-note {
+      font-size: 11px; color: var(--muted); line-height: 1.5; max-width: 300px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 12px; text-align: left;
+    }
+    .scraping-note strong { color: var(--text); }
+    /* ── LIST ── */
+    #list-view { overflow: hidden; min-height: 0; }
+    .list-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 8px; flex-shrink: 0;
+    }
+    .list-topbar-actions { display: flex; align-items: center; gap: 8px; }
+    #stats-text { font-size: 12px; color: var(--muted); }
+    #stats-text strong { color: var(--text); }
+    .btn-rescrape {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+      border-radius: 6px; padding: 5px 10px; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .btn-rescrape:hover { color: var(--text); }
+    .btn-add-channel {
+      width: 28px; height: 28px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 7px; cursor: pointer; font-size: 18px; line-height: 1;
+    }
+    .btn-add-channel:hover { background: #333; }
+    .search-wrap { padding: 2px 16px 8px; flex-shrink: 0; }
+    .search-input {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 8px 14px 8px 36px;
+      font-size: 13px; color: var(--text); outline: none; transition: border-color .15s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: 12px center;
+    }
+    .search-input:focus { border-color: #555; }
+    .search-input::placeholder { color: var(--muted); }
+    .actions-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 16px 8px; flex-shrink: 0;
+    }
+    .btn-sm {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer;
+    }
+    .btn-sm:hover { color: var(--text); }
+    .sel-count-badge { margin-left: auto; font-size: 11px; color: var(--muted); }
+    .sel-count-badge span { color: var(--accent); font-weight: 700; }
+    .channel-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 8px 8px; }
+    .channel-list::-webkit-scrollbar { width: 4px; }
+    .channel-list::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .channel-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: var(--radius);
+      cursor: pointer; transition: background .1s; user-select: none;
+    }
+    .channel-item:hover { background: var(--surface2); }
+    .channel-item.selected { background: rgba(255,0,0,0.08); }
+    .ch-check {
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 2px solid var(--border); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .1s, border-color .1s;
+    }
+    .channel-item.selected .ch-check { background: var(--accent); border-color: var(--accent); }
+    .ch-check svg { display: none; }
+    .channel-item.selected .ch-check svg { display: block; }
+    .ch-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--surface2); }
+    .ch-avatar-ph {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--muted);
+    }
+    .ch-info { flex: 1; min-width: 0; }
+    .ch-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ch-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .state-center {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px; padding: 40px 20px; text-align: center;
+    }
+    .state-icon  { font-size: 28px; }
+    .state-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .footer {
+      padding: 10px 16px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; flex-shrink: 0;
+      background: rgba(15,15,15,0.98);
+      box-shadow: 0 -10px 20px rgba(0,0,0,0.18);
+    }
+    #btn-save {
+      flex: 1; background: var(--accent); color: #fff; border: none;
+      border-radius: 7px; padding: 9px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .15s;
+    }
+    #btn-save:hover:not(:disabled) { background: var(--accent2); }
+    #btn-save:disabled { background: #555; cursor: not-allowed; }
+    #btn-open-feed {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 7px; padding: 9px 14px;
+      font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    #btn-open-feed:hover:not(:disabled) { background: #333; }
+    #btn-open-feed:disabled { opacity: 0.4; cursor: not-allowed; }
+    .toast {
+      position: fixed; bottom: 66px; left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: #1f1f1f; border: 1px solid var(--border);
+      border-radius: 20px; padding: 7px 16px;
+      font-size: 12px; color: var(--text);
+      opacity: 0; transition: opacity .2s, transform .2s;
+      pointer-events: none; white-space: nowrap; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <div class="logo">YT</div>
+    <div class="header-info">
+      <div class="header-title">Curated Feed</div>
+      <div class="header-sub">Your channels · Past 7 days only</div>
+    </div>
+  </div>
+
+  <!-- VIEW 1: ONBOARDING -->
+  <div class="view visible" id="onboarding">
+    <div class="onboard-body">
+      <div class="onboard-icon">📋</div>
+      <div class="onboard-title">Set up your curated feed</div>
+      <div class="onboard-desc">
+        We'll read your subscription list directly from YouTube, then let you
+        pick exactly which channels appear in your feed.
+      </div>
+      <div class="onboard-steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>Click <strong>Load My Subscriptions</strong> — a YouTube tab opens automatically.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>Wait a few seconds while we scroll through your subscriptions list.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>Pick the channels you want, save, and your curated feed is ready.</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-start-scrape">Load My Subscriptions →</button>
+    </div>
+  </div>
+
+  <!-- VIEW 2: SCRAPING -->
+  <div class="view" id="scraping-panel">
+    <div class="scraping-body">
+      <div class="scraping-spinner"></div>
+      <div class="scraping-title">Reading your subscriptions…</div>
+      <div class="scraping-desc">
+        A YouTube tab is open and we're scrolling through your subscriptions to collect them all.
+      </div>
+      <div class="scraping-count">Found <span id="scrape-count">0</span> channels so far</div>
+      <div class="scraping-note">
+        <strong>Keep the YouTube tab open</strong> until this completes — it may take 10–30 s
+        depending on how many subscriptions you have.
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: CHANNEL LIST -->
+  <div class="view" id="list-view">
+    <div class="list-topbar">
+      <div id="stats-text">— subscriptions</div>
+      <div class="list-topbar-actions">
+        <button class="btn-add-channel" id="btn-add-channel" title="Add channel by URL or @handle" aria-label="Add channel">+</button>
+        <button class="btn-rescrape" id="btn-rescrape">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+          </svg>
+          Refresh list
+        </button>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <input class="search-input" id="search" type="text" placeholder="Search channels…" autocomplete="off" />
+    </div>
+
+    <div class="actions-row">
+      <button class="btn-sm" id="btn-all">Select all</button>
+      <button class="btn-sm" id="btn-none">Select none</button>
+      <div class="sel-count-badge"><span id="sel-count">0</span> selected</div>
+    </div>
+
+    <div class="channel-list" id="channel-list"></div>
+
+    <div class="footer">
+      <button id="btn-open-feed" disabled>Open Feed</button>
+      <button id="btn-save" disabled>Save &amp; Open Feed</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
