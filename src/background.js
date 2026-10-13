@@ -170,6 +170,14 @@ const DEFAULT_PREFERENCES = {
     hideMoreFromYouTube: false,
     hideNotifications: false,
     hideSearchShelves: false,
+    hideVideoSidebar: false,
+    hideVideoInfo: false,
+    hideVideoButtonsBar: false,
+    hideChannel: false,
+    hideDescription: false,
+    hideAnnotations: false,
+    hideTopHeader: false,
+    hideSubscriptions: false,
   },
 };
 
