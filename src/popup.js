@@ -955,7 +955,7 @@ const FOCUS_OPTIONS = [
     ['hideChannel', 'Hide channel row', 'Channel avatar, name and Subscribe button.'],
     ['hideDescription', 'Hide description', 'Video description under the player.'],
     ['hideAnnotations', 'Hide annotations', 'Legacy annotation overlays in the player.'],
-    ['hideEndCards', 'Hide end cards', 'Creator cards over the last seconds of a video.']
+    ['hideEndCards', 'Hide end cards', 'Creator cards over the last seconds of a video.'],
     ['hidePlaylist', 'Hide playlist panel', ''],
     ['hideMerch', 'Hide merch, tickets & offers', ''],
     ['hideFundraiser', 'Hide fundraisers', ''],
@@ -963,7 +963,7 @@ const FOCUS_OPTIONS = [
   ['Menus', [
     ['hideTopHeader', 'Hide YouTube header', 'Top logo, search and account bar.'],
     ['hideSubscriptions', 'Hide/redirect Subscriptions', 'Returns the Subscriptions page to your curated homepage.'],
-    ['hideExplore', 'Hide Explore / Trending', 'Guide sidebar section.']
+    ['hideExplore', 'Hide Explore / Trending', 'Guide sidebar section.'],
     ['hideMoreFromYouTube', 'Hide "More from YouTube"', 'Premium, Music, Kids links.'],
     ['hideNotifications', 'Hide notification bell', ''],
   ]],
