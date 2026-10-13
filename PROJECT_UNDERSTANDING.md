@@ -1,7 +1,7 @@
 # PROJECT_UNDERSTANDING — YT Curated Feed
 
 Living summary for agents and contributors who have never seen this project.
-Verified against the code on 2026-10-13 (v2.1.0). Deeper detail (all flows,
+Verified against the code on 2026-10-13 (v2.2.0). Deeper detail (all flows,
 message API, storage schema) lives in `docs/ARCHITECTURE.md`.
 
 ## 1. What it is
@@ -33,7 +33,7 @@ homepage goes blank and this feed replaces it). No OAuth, no API key, no server.
   width; autoplay toggle flips off; quality pin (480p requested → `large`
   playing) on a watch page and on `/@channel/live`; watch page without
   recommendations centres the player.
-- `npm test`: 37 tests pass. `npm run smoke:browser` passes (see §3).
+- `npm test`: 39 tests pass. `npm run smoke:browser` passes (see §3).
 
 ## 3. Run, use, test
 
