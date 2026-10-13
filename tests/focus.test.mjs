@@ -49,6 +49,11 @@ test('focus.js defaults mirror the worker defaults', () => {
   assert.equal(JSON.stringify(contentDefaults), JSON.stringify(workerDefaults));
 });
 
+test('popup fallback excludes Shorts, matching the new-install defaults', () => {
+  const popupSource = read('../src/popup.js');
+  assert.match(popupSource, /videoTypeFilters:\s*\{\s*standard:\s*true,\s*shorts:\s*false,\s*live:\s*false,\s*other:\s*true\s*\}/);
+});
+
 test('every focus key has a CSS rule, except the ones page-main.js handles', () => {
   const css = read('../src/focus.css');
   const keys = Object.keys(extractObject(read('../src/focus.js'), 'FOCUS_DEFAULTS'));
@@ -66,16 +71,22 @@ test('preferences default to full homepage, auto quality and focus defaults', as
   assert.equal(preferences.preferredQuality, 'auto');
   assert.equal(preferences.focus.hideShorts, true);
   assert.equal(preferences.focus.hideLiveChat, false);
+  assert.equal(preferences.focus.hideVideoSidebar, false);
+  assert.equal(preferences.focus.hideVideoInfo, false);
+  assert.equal(preferences.focus.hideSubscriptions, false);
 });
 
 test('saving merges focus keys and rejects invalid layout values', async () => {
   const worker = createWorker();
-  await worker.message({ type: 'SAVE_PREFERENCES', preferences: { focus: { hideLiveChat: true } } });
+  await worker.message({ type: 'SAVE_PREFERENCES', preferences: { focus: { hideLiveChat: true, hideVideoSidebar: true, hideVideoInfo: true, hideSubscriptions: true } } });
   const saved = await worker.message({
     type: 'SAVE_PREFERENCES',
     preferences: { focus: { hideComments: true, bogus: true }, homepageMode: 'sideways', preferredQuality: 'hd1080' },
   });
   assert.equal(saved.preferences.focus.hideLiveChat, true);
+  assert.equal(saved.preferences.focus.hideVideoSidebar, true);
+  assert.equal(saved.preferences.focus.hideVideoInfo, true);
+  assert.equal(saved.preferences.focus.hideSubscriptions, true);
   assert.equal(saved.preferences.focus.hideComments, true);
   assert.equal(saved.preferences.focus.hideShorts, true);
   assert.equal('bogus' in saved.preferences.focus, false);
@@ -98,4 +109,34 @@ test('quality pin picks the closest level at or below the target', () => {
   assert.equal(closestQuality('hd1440', ['hd2160', 'hd1080']), 'hd1080');
   assert.equal(closestQuality('tiny', ['hd720', 'large']), 'large');
   assert.equal(closestQuality('hd1080', []), null);
+});
+
+
+test('hiding Subscriptions redirects that route to the curated homepage', () => {
+  const focusSource = read('../src/focus.js');
+  const makePage = (pathname, hideSubscriptions) => {
+    const redirects = [];
+    const classes = new Set();
+    const location = { pathname, replace: (url) => redirects.push(url) };
+    const document = {
+      documentElement: {
+        classList: { toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); } },
+        setAttribute() {},
+      },
+      addEventListener() {},
+    };
+    const chrome = {
+      storage: {
+        local: { get(_key, callback) { callback({ preferences: { focus: { hideSubscriptions } } }); } },
+        onChanged: { addListener() {} },
+      },
+    };
+    vm.runInNewContext(focusSource, { chrome, document, location, URL });
+    return { redirects, classes };
+  };
+  const enabled = makePage('/feed/subscriptions', true);
+  assert.deepEqual(enabled.redirects, ['/']);
+  assert.equal(enabled.classes.has('ytcf-hide-subscriptions'), true);
+  assert.deepEqual(makePage('/feed/subscriptions', false).redirects, []);
+  assert.deepEqual(makePage('/feed/channels', true).redirects, []);
 });
