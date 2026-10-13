@@ -2,27 +2,17 @@
 
 _Last updated: 2026-10-13_
 
-YT Curated Feed does not collect, sell, share or transmit any personal data.
+YT Curated Feed has no advertising, analytics, telemetry, account-linking service or developer-operated backend. The developer does not receive your settings, selected-channel list or watch-time totals.
 
-**What is stored, and where.** Your selected channels, your settings, and your
-daily watch-time totals are saved with Chrome's extension storage on your own
-device. They never leave your browser unless you export a backup file yourself.
+**What is stored locally.** Your selected channels, preferences and daily watch-time totals are saved in Chrome's extension storage on your device. They stay there unless you export a backup yourself.
 
-**Network requests.** The extension only contacts `www.youtube.com`: YouTube's
-public RSS feeds and the same InnerTube endpoints YouTube's website uses, to
-list recent uploads, video lengths and channel IDs. These requests are sent
-without your cookies. Reading your subscription list happens inside a YouTube
-tab in your own browser.
+**Network requests.** To build the feed, the extension requests public channel feeds and video/channel metadata from YouTube. It also loads channel avatars from YouTube's thumbnail host. Requests may include the public channel or video IDs needed for the feed and are sent without your YouTube cookies. This data is requested from YouTube, not sent to the extension developer or a third-party analytics service. Importing subscriptions reads the list inside a YouTube tab in your own browser; your selected channels are stored locally by the extension.
 
-**No analytics, no tracking, no servers.** There is no developer server, no
-analytics, no advertising, and no third-party code.
+**No telemetry or developer server.** The extension has no analytics, no ads, no third-party tracking code and no developer-operated server.
 
-**Permissions.** `storage` (save your settings), `tabs` (open the subscriptions
-page and the feed), `declarativeNetRequestWithHostAccess` (set the `Origin`
-header YouTube expects on the extension's own requests), and access to
-`youtube.com` (run the feed and focus tools there).
+**Permissions.** `storage` saves preferences and watch-time totals locally; `tabs` opens the subscriptions page for import and the feed page; `declarativeNetRequestWithHostAccess` sets the `Origin` header YouTube expects on the extension's own InnerTube requests; YouTube host access runs the curated feed and focus tools and fetches public channel/video information.
 
 **Contact.** Questions: open an issue at
 https://github.com/giri256/yt-curated-feed/issues
 
-YT Curated Feed is not affiliated with YouTube or Google.
+YT Curated Feed is independent and is not affiliated with YouTube or Google.
