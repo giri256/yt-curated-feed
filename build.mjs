@@ -11,30 +11,24 @@
  * at the PROJECT ROOT — the manifest.json there references src/ directly.
  */
 
-import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, rmSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT       = resolve(__dirname, 'dist');
 
+rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT,                    { recursive: true });
+mkdirSync(resolve(OUT, 'src'),   { recursive: true });
 mkdirSync(resolve(OUT, 'icons'), { recursive: true });
 
-const srcFiles = [
-  'background.js',
-  'channels-scraper.js',
-  'content.js',
-  'content.css',
-  'popup.html',
-  'popup.js',
-  'feed.html',
-  'feed.js',
-];
+// Every file in src/ ships; a hand-kept list silently dropped new files.
+const srcFiles = readdirSync(resolve(__dirname, 'src'));
 
 for (const f of srcFiles) {
   const src  = resolve(__dirname, 'src', f);
-  const dest = resolve(OUT, f);
+  const dest = resolve(OUT, 'src', f);
   if (existsSync(src)) { copyFileSync(src, dest); console.log(`  [copy] src/${f}`); }
   else console.warn(`  [warn] src/${f} not found — skipping`);
 }

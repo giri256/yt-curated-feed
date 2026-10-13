@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Watch Time</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
+      --border: #333; --accent: #ff3447; --text: #f1f1f1; --muted: #aaa;
+    }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    main { width: min(900px, calc(100vw - 32px)); margin: 0 auto; padding: 32px 0 60px; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .logo { display: block; width: 36px; height: 36px; }
+    h1, h2, p { margin-top: 0; }
+    h1 { margin-bottom: 3px; font-size: 22px; }
+    h2 { font-size: 15px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .panel, .metric {
+      border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
+    }
+    .metric { padding: 18px; }
+    .metric-label { color: var(--muted); font-size: 12px; }
+    .metric-value { margin-top: 7px; font-size: 25px; font-weight: 800; }
+    .panel { margin-top: 18px; padding: 20px; }
+    .limit-row { display: flex; align-items: end; gap: 10px; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
+    input {
+      width: 160px; padding: 9px 11px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--surface2); color: var(--text); font: inherit;
+    }
+    button {
+      padding: 10px 16px; border: 0; border-radius: 8px;
+      background: var(--accent); color: white; font-weight: 700; cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: wait; }
+    .limit-status { margin-top: 12px; color: var(--muted); font-size: 13px; }
+    .limit-status.blocked { color: #ff8d8d; }
+    .days { display: grid; gap: 11px; }
+    .day { display: grid; grid-template-columns: 92px 1fr 86px; gap: 12px; align-items: center; }
+    .day-label, .day-time { color: var(--muted); font-size: 12px; }
+    .day-time { text-align: right; }
+    .bar { height: 8px; overflow: hidden; border-radius: 99px; background: var(--surface2); }
+    .bar-fill { height: 100%; min-width: 0; border-radius: inherit; background: var(--accent); }
+    @media (max-width: 620px) {
+      .summary { grid-template-columns: 1fr; }
+      .day { grid-template-columns: 75px 1fr 72px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <img class="logo" src="../icons/icon48.png" alt="" />
+      <div>
+        <h1>YouTube watch time</h1>
+        <div class="muted">Counts active playback in visible YouTube watch and Shorts tabs.</div>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="metric"><div class="metric-label">Today</div><div class="metric-value" id="today">—</div></div>
+      <div class="metric"><div class="metric-label">This week</div><div class="metric-value" id="week">—</div></div>
+      <div class="metric"><div class="metric-label">Last 7 days</div><div class="metric-value" id="last-seven">—</div></div>
+    </section>
+
+    <section class="panel">
+      <h2>Daily time blocker</h2>
+      <p class="muted">Set minutes per day. Use 0 to disable blocking. The allowance resets at local midnight.</p>
+      <div class="limit-row">
+        <label>Minutes per day <input id="limit" type="number" min="0" max="1440" step="1" /></label>
+        <button id="save-limit">Save limit</button>
+      </div>
+      <div class="limit-status" id="limit-status"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Daily activity</h2>
+      <div class="days" id="days"></div>
+    </section>
+  </main>
+  <script src="stats.js"></script>
+</body>
+</html>

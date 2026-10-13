@@ -5,286 +5,930 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YT Curated Feed</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
     :root {
-      --bg:       #0f0f0f; --surface:  #1a1a1a; --surface2: #242424;
-      --border:   #2e2e2e; --accent:   #ff0000; --accent2:  #ff4444;
-      --text:     #f1f1f1; --muted:    #aaaaaa; --radius:   8px;
+      color-scheme: dark;
+      --bg: #090a0e;
+      --sidebar: #0d0f14;
+      --surface: #12151c;
+      --surface-raised: #181c25;
+      --surface-soft: #1d222c;
+      --border: rgba(255,255,255,.075);
+      --border-strong: rgba(255,255,255,.13);
+      --text: #f5f7fb;
+      --muted: #8d95a5;
+      --muted-strong: #b7bdc9;
+      --accent: #ff3447;
+      --accent-bright: #ff5263;
+      --accent-soft: rgba(255,52,71,.13);
+      --green: #54d69c;
+      --amber: #ffbd59;
+      --radius-lg: 18px;
+      --radius-md: 13px;
+      --shadow: 0 18px 50px rgba(0,0,0,.28);
     }
+
     html, body {
-      width: 420px; height: 620px; overflow: hidden;
-      background: var(--bg); color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      width: 570px;
+      height: 600px;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    body { display: block; }
-    #app {
-      width: 100%;
-      height: 100%;
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible {
+      outline: 2px solid rgba(255,82,99,.75);
+      outline-offset: 2px;
+    }
+
+    #app { display: grid; grid-template-columns: 94px 1fr; width: 100%; height: 100%; }
+
+    .sidebar {
+      position: relative;
+      z-index: 4;
       display: flex;
       flex-direction: column;
+      align-items: stretch;
+      padding: 15px 10px 12px;
+      background:
+        radial-gradient(circle at 50% 0, rgba(255,52,71,.1), transparent 28%),
+        var(--sidebar);
+      border-right: 1px solid var(--border);
+    }
+
+    .brand {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 24px;
+      border-radius: 11px;
+      box-shadow: 0 10px 24px rgba(255,20,48,.18);
+    }
+    .brand img { display: block; width: 40px; height: 40px; }
+
+    .side-nav { display: grid; gap: 7px; }
+    .nav-button {
+      position: relative;
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      min-height: 61px;
+      padding: 9px 4px 7px;
+      border: 0;
+      border-radius: 13px;
+      background: transparent;
+      color: #737b8b;
+      cursor: pointer;
+      transition: color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .nav-button svg { width: 20px; height: 20px; }
+    .nav-button span { font-size: 10px; font-weight: 650; letter-spacing: .01em; }
+    .nav-button:hover { color: var(--muted-strong); background: rgba(255,255,255,.035); }
+    .nav-button.active { color: #fff; background: var(--accent-soft); }
+    .nav-button.active::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 17px;
+      width: 3px;
+      height: 27px;
+      border-radius: 0 4px 4px 0;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(255,52,71,.7);
+    }
+    .nav-badge {
+      position: absolute;
+      top: 6px;
+      right: 7px;
+      display: grid;
+      place-items: center;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 4px;
+      border: 2px solid var(--sidebar);
+      border-radius: 20px;
+      background: #2b303b;
+      color: #cbd0d9;
+      font-size: 8px !important;
+      font-weight: 800 !important;
+    }
+    .nav-badge.attention { background: var(--accent); color: white; }
+
+    .sidebar-foot {
+      margin-top: auto;
+      padding: 10px 4px 1px;
+      text-align: center;
+      color: #535b69;
+      font-size: 9px;
+      line-height: 1.45;
+    }
+    .sidebar-foot strong { display: block; color: #7d8593; font-size: 10px; }
+
+    .main-shell {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      background:
+        radial-gradient(circle at 82% -5%, rgba(255,52,71,.105), transparent 31%),
+        radial-gradient(circle at 5% 90%, rgba(89,78,255,.055), transparent 30%),
+        var(--bg);
+    }
+    .main-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .38;
+      background-image: linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+      background-size: 26px 26px;
+      mask-image: linear-gradient(to bottom, black, transparent 62%);
+    }
+
+    .workspace-view {
+      position: relative;
+      z-index: 1;
+      display: none;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
       overflow: hidden;
+      animation: view-in .2s ease both;
     }
-    .header {
-      display: flex; align-items: center; gap: 10px;
-      padding: 14px 16px 12px; border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+    .workspace-view.visible { display: flex; flex-direction: column; }
+    @keyframes view-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: none; }
     }
-    .logo {
-      width: 28px; height: 28px; border-radius: 6px; background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 900; color: #fff; letter-spacing: -0.5px;
+
+    .scroll-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 20px 22px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #2b3039 transparent;
     }
-    .header-info { flex: 1; }
-    .header-title { font-size: 15px; font-weight: 700; }
-    .header-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    /* View visibility */
-    .view { display: none; flex-direction: column; flex: 1 1 auto; min-height: 0; }
-    .view.visible { display: flex; min-height: 0; }
-    /* ── ONBOARDING ── */
-    .onboard-body {
-      padding: 28px 24px 24px; display: flex; flex-direction: column;
-      align-items: center; gap: 14px; text-align: center;
+    .scroll-area::-webkit-scrollbar, .channel-list::-webkit-scrollbar { width: 5px; }
+    .scroll-area::-webkit-scrollbar-thumb, .channel-list::-webkit-scrollbar-thumb { background: #2b3039; border-radius: 10px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 18px;
     }
-    .onboard-icon { font-size: 40px; }
-    .onboard-title { font-size: 16px; font-weight: 700; }
-    .onboard-desc { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 320px; }
-    .onboard-steps {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px 16px;
-      text-align: left; display: flex; flex-direction: column; gap: 8px;
+    .eyebrow {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .11em;
+      text-transform: uppercase;
     }
-    .step { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
-    .step-num {
-      width: 20px; height: 20px; flex-shrink: 0; background: var(--accent); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff;
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 22px; line-height: 1.12; letter-spacing: -.025em; }
+    h2 { font-size: 14px; letter-spacing: -.01em; }
+    .header-copy { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-raised);
+      color: var(--muted-strong);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
     }
-    .btn-primary {
-      width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none;
-      border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background .15s;
+    .button:hover:not(:disabled) { transform: translateY(-1px); background: var(--surface-soft); border-color: var(--border-strong); }
+    .button:active:not(:disabled) { transform: none; }
+    .button:disabled { opacity: .43; cursor: not-allowed; }
+    .button svg { width: 14px; height: 14px; }
+    .button.primary {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--accent-bright), #ed1933);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(239,24,51,.18);
     }
-    .btn-primary:hover { background: var(--accent2); }
-    /* ── SCRAPING ── */
-    .scraping-body {
-      padding: 32px 24px 28px; display: flex; flex-direction: column;
-      align-items: center; gap: 16px; text-align: center;
+    .button.primary:hover:not(:disabled) { background: linear-gradient(135deg, #ff6876, #f2243d); }
+    .button.ghost { background: transparent; }
+    .icon-button { width: 34px; padding: 0; }
+
+    .dashboard-grid { display: grid; grid-template-columns: 1.03fr .97fr; gap: 13px; }
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(155deg, rgba(25,29,38,.96), rgba(16,19,26,.96));
+      box-shadow: var(--shadow);
     }
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(120deg, rgba(255,255,255,.035), transparent 32%);
+    }
+
+    .ring-card { min-height: 248px; padding: 18px 16px 15px; text-align: center; }
+    .card-kicker { position: relative; z-index: 1; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .watch-ring { position: relative; width: 164px; height: 164px; margin: 5px auto 1px; }
+    .watch-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+    .ring-track, .ring-progress { fill: none; stroke-width: 10; }
+    .ring-track { stroke: #242935; }
+    .ring-progress {
+      stroke: url(#ring-gradient);
+      stroke-linecap: round;
+      stroke-dasharray: 452.39;
+      stroke-dashoffset: 452.39;
+      filter: drop-shadow(0 0 7px rgba(255,52,71,.34));
+      transition: stroke-dashoffset .65s cubic-bezier(.22,.8,.24,1), stroke .2s ease;
+    }
+    .ring-progress.blocked { stroke: var(--amber); filter: drop-shadow(0 0 7px rgba(255,189,89,.35)); }
+    .ring-center { position: absolute; inset: 0; display: grid; place-content: center; }
+    .ring-number { font-size: 36px; font-weight: 820; letter-spacing: -.055em; line-height: .95; }
+    .ring-unit { margin-top: 7px; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+    .ring-caption { color: var(--muted-strong); font-size: 11px; font-weight: 650; }
+    .ring-reset { margin-top: 3px; color: #666f7e; font-size: 9px; }
+
+    .limit-card { min-height: 248px; padding: 18px; }
+    .limit-status-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(84,214,156,.08);
+      color: var(--green);
+      font-size: 9px;
+      font-weight: 750;
+    }
+    .status-pill::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 7px currentColor; }
+    .status-pill.blocked { color: var(--amber); background: rgba(255,189,89,.09); }
+    .limit-headline { margin-top: 15px; font-size: 17px; font-weight: 760; line-height: 1.2; letter-spacing: -.02em; }
+    .limit-message { min-height: 43px; margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .quick-label { margin: 12px 0 7px; color: #6f7786; font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+    .quick-limits { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+    .limit-chip {
+      height: 28px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.025);
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 750;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .limit-chip:hover { color: #fff; border-color: var(--border-strong); }
+    .limit-chip.active { border-color: rgba(255,52,71,.35); background: var(--accent-soft); color: #ff7a87; }
+    .custom-limit { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 7px; }
+    .custom-limit label { position: relative; }
+    .custom-limit input {
+      width: 100%;
+      height: 32px;
+      padding: 0 45px 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: 0;
+      background: #0f1218;
+      color: var(--text);
+      font-size: 11px;
+    }
+    .custom-limit input:focus { border-color: rgba(255,82,99,.5); }
+    .input-suffix { position: absolute; right: 10px; top: 9px; color: #697181; font-size: 9px; pointer-events: none; }
+    .custom-limit .button { min-height: 32px; height: 32px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 11px; }
+    .metric { padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(18,21,28,.75); }
+    .metric-label { color: #747c8b; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .metric-value { margin-top: 4px; font-size: 16px; font-weight: 780; letter-spacing: -.025em; }
+    .metric-note { margin-top: 2px; color: #626a78; font-size: 8px; }
+
+    .chart-card { margin-top: 11px; padding: 14px 15px 12px; }
+    .card-heading-row { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .text-button { border: 0; background: transparent; color: #777f8e; font-size: 9px; font-weight: 700; cursor: pointer; }
+    .text-button:hover { color: var(--text); }
+    .week-chart { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; height: 82px; margin-top: 11px; }
+    .chart-day { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 5px; min-width: 0; }
+    .bar-well { display: flex; align-items: flex-end; width: 100%; height: 61px; padding: 0 4px; }
+    .bar-value { width: 100%; min-height: 3px; border-radius: 5px 5px 3px 3px; background: #343a47; transition: height .55s cubic-bezier(.22,.8,.24,1), background .2s ease; }
+    .chart-day.today .bar-value { background: linear-gradient(to top, #e9233b, #ff6977); box-shadow: 0 0 12px rgba(255,52,71,.2); }
+    .bar-label { color: #646c7a; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+    .chart-day.today .bar-label { color: #ff7481; }
+
+    .setup-card {
+      display: none;
+      align-items: center;
+      gap: 11px;
+      margin-top: 11px;
+      padding: 11px 12px;
+      border: 1px solid rgba(255,189,89,.16);
+      border-radius: 12px;
+      background: rgba(255,189,89,.055);
+    }
+    .setup-card.visible { display: flex; }
+    .setup-icon { display: grid; place-items: center; width: 31px; height: 31px; flex: 0 0 auto; border-radius: 9px; background: rgba(255,189,89,.11); color: var(--amber); }
+    .setup-copy { flex: 1; min-width: 0; }
+    .setup-copy strong { display: block; font-size: 10px; }
+    .setup-copy span { color: var(--muted); font-size: 9px; }
+
+    /* Channels */
+    .channel-page-header { flex: 0 0 auto; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
+    .channel-page-header .page-header { margin: 0; align-items: center; }
+    .channel-header-actions { display: flex; gap: 7px; }
+    .channel-state { display: none; flex: 1; min-height: 0; }
+    .channel-state.visible { display: flex; }
+    .center-state { align-items: center; justify-content: center; padding: 30px 38px; text-align: center; }
+    .state-art {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface-raised);
+      color: var(--accent-bright);
+      box-shadow: var(--shadow);
+    }
+    .state-art svg { width: 27px; height: 27px; }
+    .center-state h2 { font-size: 17px; }
+    .center-state p { max-width: 320px; margin: 8px auto 17px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .state-note { margin-top: 13px; color: #646c7b; font-size: 9px; line-height: 1.45; }
+
     .scraping-spinner {
-      width: 44px; height: 44px; border: 3px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite;
+      width: 50px;
+      height: 50px;
+      margin-bottom: 16px;
+      border: 3px solid #282d37;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      box-shadow: 0 0 20px rgba(255,52,71,.09);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .scraping-title { font-size: 15px; font-weight: 700; }
-    .scraping-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; max-width: 300px; }
-    .scraping-count {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 600;
-    }
-    .scraping-count span { color: var(--accent); font-size: 16px; }
-    .scraping-note {
-      font-size: 11px; color: var(--muted); line-height: 1.5; max-width: 300px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 10px 12px; text-align: left;
-    }
-    .scraping-note strong { color: var(--text); }
-    /* ── LIST ── */
-    #list-view { overflow: hidden; min-height: 0; }
-    .list-topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 16px 8px; flex-shrink: 0;
-    }
-    .list-topbar-actions { display: flex; align-items: center; gap: 8px; }
-    #stats-text { font-size: 12px; color: var(--muted); }
-    #stats-text strong { color: var(--text); }
-    .btn-rescrape {
-      background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-      border-radius: 6px; padding: 5px 10px; font-size: 11px; cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .btn-rescrape:hover { color: var(--text); }
-    .btn-add-channel {
-      width: 28px; height: 28px; flex-shrink: 0;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-      border-radius: 7px; cursor: pointer; font-size: 18px; line-height: 1;
-    }
-    .btn-add-channel:hover { background: #333; }
-    .search-wrap { padding: 2px 16px 8px; flex-shrink: 0; }
+    .scrape-count { margin: -3px 0 16px; color: var(--muted-strong); font-size: 11px; }
+    .scrape-count strong { color: var(--accent-bright); font-size: 18px; }
+
+    #channel-manager { flex-direction: column; overflow: hidden; }
+    .channel-toolbar { flex: 0 0 auto; padding: 12px 15px 9px; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 11px; top: 10px; width: 14px; height: 14px; color: #69717f; pointer-events: none; }
     .search-input {
-      width: 100%; background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 8px 14px 8px 36px;
-      font-size: 13px; color: var(--text); outline: none; transition: border-color .15s;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: 12px center;
+      width: 100%;
+      height: 35px;
+      padding: 0 12px 0 34px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      outline: 0;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 11px;
     }
-    .search-input:focus { border-color: #555; }
-    .search-input::placeholder { color: var(--muted); }
-    .actions-row {
-      display: flex; align-items: center; gap: 8px;
-      padding: 0 16px 8px; flex-shrink: 0;
+    .search-input:focus { border-color: rgba(255,82,99,.45); background: var(--surface-raised); }
+    .search-input::placeholder { color: #656d7b; }
+    .selection-tools { display: flex; align-items: center; gap: 7px; margin-top: 8px; }
+    .mini-button {
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: transparent;
+      color: #7e8695;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .btn-sm {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--muted); border-radius: 5px; padding: 4px 10px; font-size: 11px; cursor: pointer;
-    }
-    .btn-sm:hover { color: var(--text); }
-    .sel-count-badge { margin-left: auto; font-size: 11px; color: var(--muted); }
-    .sel-count-badge span { color: var(--accent); font-weight: 700; }
-    .channel-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 8px 8px; }
-    .channel-list::-webkit-scrollbar { width: 4px; }
-    .channel-list::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .mini-button:hover { color: var(--text); background: rgba(255,255,255,.03); }
+    .selection-count { margin-left: auto; color: #737b89; font-size: 9px; }
+    .selection-count strong { color: var(--text); }
+
+    .channel-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 9px 8px; }
     .channel-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 10px; border-radius: var(--radius);
-      cursor: pointer; transition: background .1s; user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 7px 9px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .14s ease, border-color .14s ease;
     }
-    .channel-item:hover { background: var(--surface2); }
-    .channel-item.selected { background: rgba(255,0,0,0.08); }
+    .channel-item:hover { background: rgba(255,255,255,.025); }
+    .channel-item.selected { border-color: rgba(255,52,71,.09); background: rgba(255,52,71,.055); }
     .ch-check {
-      width: 16px; height: 16px; flex-shrink: 0;
-      border: 2px solid var(--border); border-radius: 4px;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .1s, border-color .1s;
+      display: grid;
+      place-items: center;
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+      border: 1.5px solid #3b414d;
+      border-radius: 5px;
+      color: white;
+      transition: background .14s ease, border-color .14s ease, transform .14s ease;
     }
-    .channel-item.selected .ch-check { background: var(--accent); border-color: var(--accent); }
-    .ch-check svg { display: none; }
-    .channel-item.selected .ch-check svg { display: block; }
-    .ch-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--surface2); }
-    .ch-avatar-ph {
-      width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--muted);
-    }
+    .ch-check svg { width: 10px; height: 10px; opacity: 0; transform: scale(.6); transition: .14s ease; }
+    .channel-item.selected .ch-check { border-color: var(--accent); background: var(--accent); }
+    .channel-item.selected .ch-check svg { opacity: 1; transform: scale(1); }
+    .ch-avatar, .ch-avatar-ph { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 50%; background: var(--surface-soft); }
+    .ch-avatar { object-fit: cover; }
+    .ch-avatar-ph { display: grid; place-items: center; color: var(--muted); font-size: 12px; font-weight: 800; }
     .ch-info { flex: 1; min-width: 0; }
-    .ch-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ch-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
-    .state-center {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 8px; padding: 40px 20px; text-align: center;
+    .ch-name { overflow: hidden; color: #e9ecf2; font-size: 11px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .ch-sub { overflow: hidden; margin-top: 2px; color: #69717f; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .empty-list { padding: 50px 20px; color: var(--muted); font-size: 11px; text-align: center; }
+
+    .channel-footer {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px 12px;
+      border-top: 1px solid var(--border);
+      background: rgba(9,10,14,.94);
+      backdrop-filter: blur(14px);
     }
-    .state-icon  { font-size: 28px; }
-    .state-title { font-size: 13px; font-weight: 600; color: var(--text); }
-    .footer {
-      padding: 10px 16px; border-top: 1px solid var(--border);
-      display: flex; gap: 8px; flex-shrink: 0;
-      background: rgba(15,15,15,0.98);
-      box-shadow: 0 -10px 20px rgba(0,0,0,0.18);
+    .unsaved-label { margin-right: auto; color: #6e7685; font-size: 9px; }
+    .unsaved-label.dirty { color: var(--amber); }
+
+    /* Settings */
+    .settings-stack { display: grid; gap: 11px; }
+    .settings-card { padding: 16px; }
+    .settings-row { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+    .settings-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 auto; border-radius: 11px; background: var(--surface-soft); color: #aeb5c2; }
+    .settings-icon svg { width: 17px; height: 17px; }
+    .settings-copy { flex: 1; min-width: 0; }
+    .settings-copy strong { display: block; font-size: 11px; }
+    .settings-copy span { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .settings-actions { position: relative; z-index: 1; display: flex; gap: 7px; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border); }
+    .settings-actions .button { flex: 1; }
+
+    .toggle { position: relative; width: 38px; height: 22px; flex: 0 0 auto; }
+    .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .toggle-track { position: absolute; inset: 0; border: 1px solid var(--border-strong); border-radius: 99px; background: #252a34; cursor: pointer; transition: .18s ease; }
+    .toggle-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #8a92a0; transition: .18s ease; }
+    .toggle input:checked + .toggle-track { border-color: rgba(255,52,71,.45); background: rgba(255,52,71,.24); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(16px); background: var(--accent-bright); box-shadow: 0 0 8px rgba(255,52,71,.35); }
+    .toggle input:focus-visible + .toggle-track { outline: 2px solid rgba(255,82,99,.65); outline-offset: 2px; }
+
+    .log-viewer { position: relative; z-index: 1; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border); }
+    .log-viewer[hidden] { display: none; }
+    .log-viewer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .log-viewer-head span { color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .log-viewer-actions { display: flex; gap: 6px; }
+    .log-list { display: grid; gap: 6px; max-height: 172px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2b3039 transparent; }
+    .log-entry { padding: 7px 9px; border: 1px solid var(--border); border-radius: 9px; background: rgba(255,255,255,.02); font-size: 9px; line-height: 1.5; }
+    .log-entry-head { display: flex; align-items: baseline; gap: 7px; }
+    .log-time { color: #7e8695; font-variant-numeric: tabular-nums; }
+    .log-event { color: var(--text); font-weight: 750; }
+    .log-source { margin-left: auto; color: #5f6674; }
+    .log-detail { margin-top: 2px; color: var(--muted); word-break: break-word; }
+    .log-empty { padding: 12px; color: #5f6674; font-size: 10px; text-align: center; }
+
+    .modal {
+      position: fixed;
+      z-index: 90;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding-left: 94px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease;
     }
-    #btn-save {
-      flex: 1; background: var(--accent); color: #fff; border: none;
-      border-radius: 7px; padding: 9px; font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: background .15s;
+    .modal.visible { opacity: 1; pointer-events: auto; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(3,4,7,.75); backdrop-filter: blur(6px); }
+    .modal-dialog {
+      position: relative;
+      width: 350px;
+      padding: 19px;
+      border: 1px solid var(--border-strong);
+      border-radius: 17px;
+      background: linear-gradient(155deg, #1a1e27, #11141a);
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+      transform: translateY(7px) scale(.985);
+      transition: transform .18s ease;
     }
-    #btn-save:hover:not(:disabled) { background: var(--accent2); }
-    #btn-save:disabled { background: #555; cursor: not-allowed; }
-    #btn-open-feed {
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); border-radius: 7px; padding: 9px 14px;
-      font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    .modal.visible .modal-dialog { transform: none; }
+    .modal-title { font-size: 15px; font-weight: 780; letter-spacing: -.015em; }
+    .modal-copy { margin-top: 6px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .modal-input {
+      width: 100%;
+      height: 38px;
+      margin-top: 15px;
+      padding: 0 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: 0;
+      background: #0d1016;
+      color: var(--text);
+      font-size: 11px;
     }
-    #btn-open-feed:hover:not(:disabled) { background: #333; }
-    #btn-open-feed:disabled { opacity: 0.4; cursor: not-allowed; }
+    .modal-input:focus { border-color: rgba(255,82,99,.5); }
+    .modal-input::placeholder { color: #5f6674; }
+    .modal-error { min-height: 15px; margin-top: 6px; color: #ff8490; font-size: 9px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 5px; }
+
     .toast {
-      position: fixed; bottom: 66px; left: 50%;
-      transform: translateX(-50%) translateY(8px);
-      background: #1f1f1f; border: 1px solid var(--border);
-      border-radius: 20px; padding: 7px 16px;
-      font-size: 12px; color: var(--text);
-      opacity: 0; transition: opacity .2s, transform .2s;
-      pointer-events: none; white-space: nowrap; z-index: 100;
+      position: fixed;
+      z-index: 100;
+      left: calc(94px + (476px / 2));
+      bottom: 18px;
+      max-width: 330px;
+      padding: 8px 13px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      background: rgba(28,32,41,.96);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      color: #e8ebf1;
+      font-size: 10px;
+      font-weight: 650;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 8px);
+      transition: opacity .18s ease, transform .18s ease;
+      white-space: nowrap;
     }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* Focus view */
+    .focus-group { padding: 6px 16px 10px; }
+    .focus-group-title { margin: 8px 0 4px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .focus-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); }
+    .focus-row:first-of-type { border-top: none; }
+    .focus-row .settings-copy strong { font-size: 11px; }
+    .segmented { display: inline-flex; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+    .segmented button { border: 0; border-radius: 7px; padding: 6px 10px; background: transparent; color: var(--muted); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .segmented button.active { background: var(--accent-soft); color: #ff7a87; }
+    .quality-select { border: 1px solid var(--border); border-radius: 9px; padding: 6px 8px; background: var(--surface-soft); color: inherit; font: inherit; font-size: 10px; }
+    .support-links { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; padding-top: 13px; border-top: 1px solid var(--border); }
+    .support-links a { flex: 1 1 auto; text-align: center; text-decoration: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
   </style>
 </head>
 <body>
-
-<div id="app">
-  <div class="header">
-    <div class="logo">YT</div>
-    <div class="header-info">
-      <div class="header-title">Curated Feed</div>
-      <div class="header-sub">Your channels · Past 7 days only</div>
-    </div>
-  </div>
-
-  <!-- VIEW 1: ONBOARDING -->
-  <div class="view visible" id="onboarding">
-    <div class="onboard-body">
-      <div class="onboard-icon">📋</div>
-      <div class="onboard-title">Set up your curated feed</div>
-      <div class="onboard-desc">
-        We'll read your subscription list directly from YouTube, then let you
-        pick exactly which channels appear in your feed.
-      </div>
-      <div class="onboard-steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div>Click <strong>Load My Subscriptions</strong> — a YouTube tab opens automatically.</div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div>Wait a few seconds while we scroll through your subscriptions list.</div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div>Pick the channels you want, save, and your curated feed is ready.</div>
-        </div>
-      </div>
-      <button class="btn-primary" id="btn-start-scrape">Load My Subscriptions →</button>
-    </div>
-  </div>
-
-  <!-- VIEW 2: SCRAPING -->
-  <div class="view" id="scraping-panel">
-    <div class="scraping-body">
-      <div class="scraping-spinner"></div>
-      <div class="scraping-title">Reading your subscriptions…</div>
-      <div class="scraping-desc">
-        A YouTube tab is open and we're scrolling through your subscriptions to collect them all.
-      </div>
-      <div class="scraping-count">Found <span id="scrape-count">0</span> channels so far</div>
-      <div class="scraping-note">
-        <strong>Keep the YouTube tab open</strong> until this completes — it may take 10–30 s
-        depending on how many subscriptions you have.
-      </div>
-    </div>
-  </div>
-
-  <!-- VIEW 3: CHANNEL LIST -->
-  <div class="view" id="list-view">
-    <div class="list-topbar">
-      <div id="stats-text">— subscriptions</div>
-      <div class="list-topbar-actions">
-        <button class="btn-add-channel" id="btn-add-channel" title="Add channel by URL or @handle" aria-label="Add channel">+</button>
-        <button class="btn-rescrape" id="btn-rescrape">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
-            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+  <div id="app">
+    <aside class="sidebar" aria-label="Popup navigation">
+      <div class="brand" aria-label="YT Curated Feed"><img src="../icons/icon48.png" alt="" /></div>
+      <nav class="side-nav">
+        <button class="nav-button active" id="nav-dashboard" data-view="dashboard" aria-label="Watch-time dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 7h6V4h-6z"/>
           </svg>
-          Refresh list
+          <span>Overview</span>
         </button>
+        <button class="nav-button" id="nav-channels" data-view="channels" aria-label="Choose feed channels">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="8" r="3"/><path d="M3.5 19c.4-3.3 2.2-5 5.5-5s5.1 1.7 5.5 5M16 7h5M18.5 4.5v5"/>
+          </svg>
+          <span>Channels</span>
+          <span class="nav-badge" id="nav-channel-count">0</span>
+        </button>
+        <button class="nav-button" id="nav-focus" data-view="focus" aria-label="Focus tools for YouTube">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>
+          </svg>
+          <span>Focus</span>
+        </button>
+        <button class="nav-button" id="nav-settings" data-view="settings" aria-label="Feed settings and data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </nav>
+      <div class="sidebar-foot"><strong>Curated Feed</strong>v2.0</div>
+    </aside>
+
+    <main class="main-shell">
+      <section class="workspace-view visible" id="dashboard-view" aria-labelledby="dashboard-title">
+        <div class="scroll-area">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow" id="dashboard-date">Today</div>
+              <h1 id="dashboard-title">Your watch balance</h1>
+              <p class="header-copy">See the pattern, then choose the boundary.</p>
+            </div>
+            <button class="button" id="dashboard-open-feed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+              Open feed
+            </button>
+          </header>
+
+          <div class="dashboard-grid">
+            <article class="card ring-card">
+              <div class="card-kicker">Today’s YouTube</div>
+              <div class="watch-ring" aria-label="Today's watch time and daily limit">
+                <svg viewBox="0 0 180 180" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="ring-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#ff7a87"/>
+                      <stop offset="1" stop-color="#ee1731"/>
+                    </linearGradient>
+                  </defs>
+                  <circle class="ring-track" cx="90" cy="90" r="72"/>
+                  <circle class="ring-progress" id="ring-progress" cx="90" cy="90" r="72"/>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-number" id="ring-value">0</div>
+                  <div class="ring-unit">minutes</div>
+                </div>
+              </div>
+              <div class="ring-caption" id="ring-caption">No daily limit</div>
+              <div class="ring-reset" id="ring-reset">Tracking resets at midnight</div>
+            </article>
+
+            <article class="card limit-card">
+              <div class="limit-status-row">
+                <div class="card-kicker">Daily guardrail</div>
+                <div class="status-pill" id="tracking-pill">Tracking</div>
+              </div>
+              <div class="limit-headline" id="limit-headline">Choose a comfortable limit</div>
+              <p class="limit-message" id="limit-message">YouTube will be paused and covered when today’s allowance is used.</p>
+              <div class="quick-label">Quick limits</div>
+              <div class="quick-limits" id="quick-limits">
+                <button class="limit-chip" data-minutes="20">20m</button>
+                <button class="limit-chip" data-minutes="40">40m</button>
+                <button class="limit-chip" data-minutes="60">1h</button>
+                <button class="limit-chip" data-minutes="90">1.5h</button>
+                <button class="limit-chip" data-minutes="0">Off</button>
+              </div>
+              <div class="custom-limit">
+                <label>
+                  <input id="daily-limit" type="number" min="0" max="1440" step="1" inputmode="numeric" aria-label="Custom daily limit in minutes" />
+                  <span class="input-suffix">min</span>
+                </label>
+                <button class="button primary" id="save-limit">Apply</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="metrics" aria-label="Watch-time summaries">
+            <div class="metric"><div class="metric-label">This week</div><div class="metric-value" id="week-metric">—</div><div class="metric-note">Since Monday</div></div>
+            <div class="metric"><div class="metric-label">Last 7 days</div><div class="metric-value" id="seven-metric">—</div><div class="metric-note">Rolling total</div></div>
+            <div class="metric"><div class="metric-label">Daily average</div><div class="metric-value" id="average-metric">—</div><div class="metric-note">Past 7 days</div></div>
+          </div>
+
+          <article class="card chart-card">
+            <div class="card-heading-row">
+              <h2>Seven-day rhythm</h2>
+              <button class="text-button" id="btn-stats">EXPAND ANALYTICS</button>
+            </div>
+            <div class="week-chart" id="week-chart" aria-label="Watch time for the last seven days"></div>
+          </article>
+
+          <div class="setup-card" id="dashboard-setup">
+            <div class="setup-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.4-3.3 2.2-5 5.5-5s5.1 1.7 5.5 5M17 8h4M19 6v4"/></svg>
+            </div>
+            <div class="setup-copy"><strong>Your curated feed needs channels</strong><span>Load subscriptions and choose what deserves your attention.</span></div>
+            <button class="button" id="dashboard-setup-button">Set up</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-view" id="channels-view" aria-labelledby="channels-title">
+        <header class="channel-page-header">
+          <div class="page-header">
+            <div>
+              <div class="eyebrow">Feed sources</div>
+              <h1 id="channels-title">Choose channels</h1>
+              <p class="header-copy" id="stats-text">Build a calmer subscription feed.</p>
+            </div>
+            <div class="channel-header-actions">
+              <button class="button icon-button" id="btn-add-channel" title="Add a channel" aria-label="Add channel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <button class="button" id="btn-rescrape">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="channel-state center-state" id="channel-onboarding">
+          <div>
+            <div class="state-art">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2h-11A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+            </div>
+            <h2>Bring in your subscriptions</h2>
+            <p>We’ll read the channels visible in your signed-in YouTube subscription page. Your login and cookies stay with YouTube.</p>
+            <button class="button primary" id="btn-start-scrape">Load my subscriptions</button>
+            <div class="state-note">A temporary YouTube tab opens for roughly 10–30 seconds.</div>
+          </div>
+        </div>
+
+        <div class="channel-state center-state" id="scraping-panel">
+          <div>
+            <div class="scraping-spinner"></div>
+            <h2>Reading your subscriptions</h2>
+            <p>Keep the YouTube channels tab open while the extension scrolls through the list.</p>
+            <div class="scrape-count">Found <strong id="scrape-count">0</strong> channels</div>
+            <button class="button ghost" id="btn-cancel-scrape">Cancel refresh</button>
+          </div>
+        </div>
+
+        <div class="channel-state" id="channel-manager">
+          <div class="channel-toolbar">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+              <input class="search-input" id="search" type="search" placeholder="Search channels or @handles" autocomplete="off" />
+            </div>
+            <div class="selection-tools">
+              <button class="mini-button" id="btn-all">Select visible</button>
+              <button class="mini-button" id="btn-none">Clear visible</button>
+              <div class="selection-count"><strong id="sel-count">0</strong> selected</div>
+            </div>
+          </div>
+          <div class="channel-list" id="channel-list"></div>
+          <footer class="channel-footer">
+            <div class="unsaved-label" id="unsaved-label">Selection saved</div>
+            <button class="button" id="btn-save" disabled>Save selection</button>
+            <button class="button primary" id="btn-open-feed" disabled>Save &amp; open feed</button>
+          </footer>
+        </div>
+      </section>
+
+      <section class="workspace-view" id="focus-view" aria-labelledby="focus-title">
+        <div class="scroll-area">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Focus tools</div>
+              <h1 id="focus-title">Watch on purpose</h1>
+              <p class="header-copy">Switch off the parts of YouTube built to keep you scrolling. Changes apply to open tabs instantly.</p>
+            </div>
+          </header>
+
+          <div class="settings-stack">
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-copy"><strong>YouTube homepage</strong><span>Full page replaces YouTube's recommendations with your feed. Compact keeps a panel above YouTube's own feed.</span></div>
+                <div class="segmented" role="group" aria-label="Homepage mode">
+                  <button type="button" data-homepage-mode="full">Full page</button>
+                  <button type="button" data-homepage-mode="panel">Compact</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-copy"><strong>Video quality</strong><span>Every video starts at this quality (or the closest one it has). Picking another in the player still works.</span></div>
+                <select class="quality-select" id="quality-select" aria-label="Preferred video quality">
+                  <option value="auto">Auto</option>
+                  <option value="hd2160">2160p (4K)</option>
+                  <option value="hd1440">1440p</option>
+                  <option value="hd1080">1080p</option>
+                  <option value="hd720">720p</option>
+                  <option value="large">480p</option>
+                  <option value="medium">360p</option>
+                  <option value="small">240p</option>
+                  <option value="tiny">144p</option>
+                </select>
+              </div>
+            </article>
+
+            <article class="card" id="focus-toggles"></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-view" id="settings-view" aria-labelledby="settings-title">
+        <div class="scroll-area">
+          <header class="page-header">
+            <div>
+              <div class="eyebrow">Preferences & data</div>
+              <h1 id="settings-title">Keep it intentional</h1>
+              <p class="header-copy">Tune the feed and keep your setup portable.</p>
+            </div>
+          </header>
+
+          <div class="settings-stack">
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v11a2.5 2.5 0 0 1-2.5 2h-9A2.5 2.5 0 0 1 5 17.5z"/><path d="m10 9 5 3-5 3z"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Live &amp; upcoming videos</strong><span>Include livestreams, premieres, and scheduled entries in the curated feed.</span></div>
+                <label class="toggle">
+                  <input id="live-filter-toggle" type="checkbox" aria-label="Show live and upcoming videos" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+            </article>
+
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-9-9"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Diagnostic logging</strong><span>Record feed timing — page opened, data fetched, view displayed — for troubleshooting. Off by default.</span></div>
+                <label class="toggle">
+                  <input id="logging-toggle" type="checkbox" aria-label="Enable diagnostic logging" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="log-viewer" id="log-viewer" hidden>
+                <div class="log-viewer-head">
+                  <span id="log-count">No entries yet</span>
+                  <div class="log-viewer-actions">
+                    <button class="mini-button" id="btn-refresh-logs">Refresh</button>
+                    <button class="mini-button" id="btn-clear-logs">Clear</button>
+                  </div>
+                </div>
+                <div class="log-list" id="log-list"></div>
+              </div>
+            </article>
+
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M5 20h14"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Backup your curation</strong><span>Export channels and preferences, or restore an older JSON backup safely.</span></div>
+              </div>
+              <div class="settings-actions">
+                <button class="button" id="btn-import">Import backup</button>
+                <button class="button" id="btn-export">Export backup</button>
+              </div>
+            </article>
+
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 19V9M12 19V4M19 19v-6"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Full watch-time report</strong><span>Open the expanded daily report in a persistent browser tab.</span></div>
+                <button class="button" id="settings-open-stats">Open</button>
+              </div>
+            </article>
+
+            <article class="card settings-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M12 7v5l3 2"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Session viewing state</strong><span id="session-copy">Opened cards turn grey for this browser session and clear after restart.</span></div>
+              </div>
+            </article>
+
+            <article class="card settings-card" id="support-card">
+              <div class="settings-row">
+                <div class="settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>
+                </div>
+                <div class="settings-copy"><strong>Support YT Curated Feed</strong><span>Free, no ads, no tracking, built by one person. If it gave you hours back, a coffee keeps it going.</span></div>
+              </div>
+              <div class="support-links">
+                <a class="button primary" href="https://buymeacoffee.com/giri256" target="_blank" rel="noopener">Buy me a coffee</a>
+                <a class="button" href="https://paypal.me/kgspavan" target="_blank" rel="noopener">PayPal</a>
+                <a class="button" href="https://github.com/giri256/yt-curated-feed" target="_blank" rel="noopener">GitHub</a>
+                <a class="button" href="welcome.html" target="_blank" rel="noopener">Welcome guide</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="modal" id="add-channel-modal" aria-hidden="true">
+      <div class="modal-backdrop" id="add-channel-backdrop"></div>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="add-channel-title">
+        <div class="modal-title" id="add-channel-title">Add a channel directly</div>
+        <p class="modal-copy">Paste a YouTube channel URL, @handle, or UC channel ID. It will be selected automatically.</p>
+        <input class="modal-input" id="add-channel-input" type="text" autocomplete="off" placeholder="youtube.com/@channel or @handle" />
+        <div class="modal-error" id="add-channel-error" role="alert"></div>
+        <div class="modal-actions">
+          <button class="button ghost" id="cancel-add-channel">Cancel</button>
+          <button class="button primary" id="confirm-add-channel">Add channel</button>
+        </div>
       </div>
     </div>
 
-    <div class="search-wrap">
-      <input class="search-input" id="search" type="text" placeholder="Search channels…" autocomplete="off" />
-    </div>
-
-    <div class="actions-row">
-      <button class="btn-sm" id="btn-all">Select all</button>
-      <button class="btn-sm" id="btn-none">Select none</button>
-      <div class="sel-count-badge"><span id="sel-count">0</span> selected</div>
-    </div>
-
-    <div class="channel-list" id="channel-list"></div>
-
-    <div class="footer">
-      <button id="btn-open-feed" disabled>Open Feed</button>
-      <button id="btn-save" disabled>Save &amp; Open Feed</button>
-    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <div class="toast" id="toast"></div>
-</div>
-
-<script src="popup.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>

@@ -7,8 +7,8 @@
  *  2. Incrementally scroll to the bottom, pausing between scrolls so
  *     YouTube's infinite-scroll can fire and render new items.
  *  3. After each scroll settle, extract new ytd-channel-renderer elements.
- *  4. When two consecutive scroll attempts add no new channels we consider
- *     the list complete.
+ *  4. Finish only after the renderer count, document height, bottom position,
+ *     and YouTube continuation/loading state are all stable.
  *  5. Post { type: 'CHANNELS_READY', channels } to the background SW.
  *
  * Channel ID extraction priority:
@@ -29,17 +29,40 @@
   window.__ytcfScraperRunning = true;
 
   // ── Constants ──────────────────────────────────────────────────────────
-  const SCROLL_PAUSE_MS  = 1200;  // ms to wait after each scroll
-  const MAX_SAME_COUNT   = 3;     // consecutive unchanged counts before stopping
-  const PROGRESS_EVERY   = 10;    // send progress update every N new channels
+  const INITIAL_RENDER_TIMEOUT_MS = 15 * 1000;
+  const PAGE_SETTLE_TIMEOUT_MS = 3000;
+  const MAX_STABLE_ROUNDS = 5;
+  const MAX_SCRAPE_MS = 150 * 1000;
+  const PROGRESS_EVERY = 10;
 
   // ── State ──────────────────────────────────────────────────────────────
-  const collected = new Map(); // channelId → channel object
-  let   sameCount = 0;
+  let collected = new Map(); // channelId → channel object
+  let scrapeActive = false;
+  let scrapeDone = false;
 
   // ── Utilities ──────────────────────────────────────────────────────────
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
+  }
+
+  function sendToBackground(message) {
+    try {
+      chrome.runtime.sendMessage(message, () => void chrome.runtime.lastError);
+    } catch (_) {}
+  }
+
+  function requestFromBackground(message) {
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage(message, (response) => {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else if (response?.error) reject(new Error(response.error));
+          else resolve(response);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   /**
@@ -306,34 +329,39 @@
 
   /** Send a progress update to the background (non-blocking). */
   function sendProgress() {
-    try {
-      chrome.runtime.sendMessage({
-        type:     'CHANNELS_PROGRESS',
-        count:    collected.size,
-        channels: [...collected.values()],
-      });
-    } catch (_) {}
+    sendToBackground({
+      type:     'CHANNELS_PROGRESS',
+      count:    collected.size,
+      channels: [...collected.values()],
+    });
   }
 
   /** Send the final result to the background. */
-  function sendComplete() {
-    try {
-      chrome.runtime.sendMessage({
-        type:     'CHANNELS_READY',
-        channels: [...collected.values()],
-      });
-    } catch (_) {}
+  function sendComplete(diagnostics = {}) {
+    sendToBackground({
+      type:     'CHANNELS_READY',
+      channels: [...collected.values()],
+      diagnostics,
+    });
+  }
+
+  function sendFailure(error) {
+    sendToBackground({
+      type: 'CHANNELS_FAILED',
+      error: String(error || 'Could not finish loading subscriptions.'),
+      count: collected.size,
+    });
   }
 
   // ── Listen for a "start scraping" trigger from the popup/background ────
   // We start automatically on load, but also accept an explicit trigger.
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.type === 'SCRAPE_NOW') {
-      // Already running or about to run — just acknowledge
-      sendResponse({ started: true });
+      void startScrape();
+      sendResponse({ started: true, alreadyRunning: scrapeActive });
     }
     if (msg.type === 'GET_SCRAPED_CHANNELS') {
-      sendResponse({ channels: [...collected.values()], done: sameCount >= MAX_SAME_COUNT });
+      sendResponse({ channels: [...collected.values()], done: scrapeDone, active: scrapeActive });
     }
   });
 
@@ -344,7 +372,7 @@
     banner.id = 'ytcf-banner';
     banner.style.cssText = `
       position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-      background: #1a1a1a; border: 1px solid #333; border-left: 3px solid #ff0000;
+      background: #1a1a1a; border: 1px solid #333; border-left: 3px solid #ff3447;
       border-radius: 8px; padding: 10px 14px;
       font-family: system-ui, sans-serif; font-size: 12px; color: #f1f1f1;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
@@ -352,7 +380,7 @@
       max-width: 260px;
     `;
     banner.innerHTML = `
-      <div style="width:12px;height:12px;border:2px solid #333;border-top-color:#ff0000;
+      <div style="width:12px;height:12px;border:2px solid #333;border-top-color:#ff3447;
                   border-radius:50%;animation:ytcf-spin 0.7s linear infinite;flex-shrink:0"></div>
       <span id="ytcf-banner-text">YT Curated: collecting channels…</span>
       <style>@keyframes ytcf-spin{to{transform:rotate(360deg)}}</style>
@@ -374,60 +402,144 @@
     }
   }
 
+  function getScrollMetrics() {
+    const scroller = document.scrollingElement || document.documentElement;
+    const scrollTop = scroller.scrollTop || window.scrollY || 0;
+    const clientHeight = scroller.clientHeight || window.innerHeight || 0;
+    const scrollHeight = Math.max(scroller.scrollHeight || 0, document.documentElement.scrollHeight || 0);
+    return {
+      scroller,
+      scrollHeight,
+      atBottom: scrollTop + clientHeight >= scrollHeight - 8,
+    };
+  }
+
+  function isVisible(element) {
+    if (!element) return false;
+    const style = getComputedStyle(element);
+    return style.display !== 'none'
+      && style.visibility !== 'hidden'
+      && element.getClientRects().length > 0;
+  }
+
+  function getVisibleContinuation() {
+    return Array.from(document.querySelectorAll('ytd-continuation-item-renderer'))
+      .find(isVisible) ?? null;
+  }
+
+  function isYouTubeLoading() {
+    const activeSpinner = document.querySelector(
+      'tp-yt-paper-spinner[active], paper-spinner[active], yt-page-navigation-progress[aria-valuenow]'
+    );
+    return isVisible(activeSpinner) || Boolean(getVisibleContinuation());
+  }
+
+  async function waitForPageGrowth(previousCount, previousHeight) {
+    let waited = 0;
+    while (waited < PAGE_SETTLE_TIMEOUT_MS) {
+      await sleep(250);
+      waited += 250;
+      harvestRenderers();
+      const { scrollHeight } = getScrollMetrics();
+      if (collected.size > previousCount || scrollHeight > previousHeight) return true;
+      if (waited >= 1000 && !isYouTubeLoading()) return false;
+    }
+    return false;
+  }
+
   // ── Main scroll-and-harvest loop ───────────────────────────────────────
   async function scrape() {
     // Wait for the first set of channel renderers to appear
     let waited = 0;
-    while (!document.querySelector('ytd-channel-renderer') && waited < 8000) {
+    while (!document.querySelector('ytd-channel-renderer') && waited < INITIAL_RENDER_TIMEOUT_MS) {
       await sleep(300);
       waited += 300;
     }
 
     if (!document.querySelector('ytd-channel-renderer')) {
-      // No channels found — could be empty list or login required
-      sendComplete();
+      sendFailure('YouTube did not render a subscription list. Make sure you are signed in, then try again.');
       return;
     }
 
     showBanner();
 
+    const startedAt = Date.now();
     let lastProgressReport = 0;
+    let stableRounds = 0;
 
-    while (sameCount < MAX_SAME_COUNT) {
+    while (stableRounds < MAX_STABLE_ROUNDS) {
+      if ((Date.now() - startedAt) > MAX_SCRAPE_MS) {
+        throw new Error(`Subscription loading timed out after finding ${collected.size} channels. The previous list was kept.`);
+      }
+
+      const beforeCount = collected.size;
+      const beforeHeight = getScrollMetrics().scrollHeight;
       const added = harvestRenderers();
 
-      if (added === 0) {
-        sameCount++;
-      } else {
-        sameCount = 0;
-        // Send incremental progress updates
-        if (collected.size - lastProgressReport >= PROGRESS_EVERY) {
-          lastProgressReport = collected.size;
-          sendProgress();
-        }
+      if (added > 0 && collected.size - lastProgressReport >= PROGRESS_EVERY) {
+        lastProgressReport = collected.size;
+        sendProgress();
       }
 
       updateBanner(`YT Curated: ${collected.size} channels found…`);
 
-      // Scroll to bottom to trigger next page load
-      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-      await sleep(SCROLL_PAUSE_MS);
+      // Bring both the last renderer and continuation trigger into view, then
+      // jump to the current bottom. Count stability alone is not completion.
+      const renderers = document.querySelectorAll('ytd-channel-renderer');
+      renderers[renderers.length - 1]?.scrollIntoView({ block: 'end', behavior: 'auto' });
+      getVisibleContinuation()?.scrollIntoView({ block: 'end', behavior: 'auto' });
+      const { scroller, scrollHeight } = getScrollMetrics();
+      scroller.scrollTo({ top: scrollHeight, behavior: 'auto' });
 
-      // Also try triggering a scroll event in case YT uses scroll listeners
       window.dispatchEvent(new Event('scroll'));
-      await sleep(200);
+      await waitForPageGrowth(beforeCount, beforeHeight);
+
+      harvestRenderers();
+      const metrics = getScrollMetrics();
+      const grew = collected.size > beforeCount || metrics.scrollHeight > beforeHeight;
+      if (grew) {
+        stableRounds = 0;
+      } else if (metrics.atBottom && !isYouTubeLoading()) {
+        stableRounds++;
+      } else {
+        stableRounds = 0;
+      }
     }
 
     // Final harvest after scrolling stops
     harvestRenderers();
+    sendProgress();
 
     updateBanner(`YT Curated: ✓ ${collected.size} channels collected`, true);
-    sendComplete();
+    sendComplete({ stableRounds, elapsedMs: Date.now() - startedAt });
 
     // Scroll back to top so the user sees the channels page normally
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Kick off after a short delay to let the page's own JS finish initialising
-  setTimeout(scrape, 600);
+  async function startScrape() {
+    if (scrapeActive) return;
+    scrapeActive = true;
+    scrapeDone = false;
+    collected = new Map();
+
+    try {
+      await scrape();
+      scrapeDone = true;
+    } catch (error) {
+      updateBanner(`YT Curated: ${error?.message || 'loading failed'}`, true);
+      sendFailure(error?.message);
+    } finally {
+      scrapeActive = false;
+    }
+  }
+
+  // A new tab can load before the worker's explicit SCRAPE_NOW reaches it.
+  // Persisted status makes startup independent of that timing race.
+  setTimeout(async () => {
+    try {
+      const status = await requestFromBackground({ type: 'GET_SCRAPE_STATUS' });
+      if (status?.inProgress) await startScrape();
+    } catch (_) {}
+  }, 600);
 })();

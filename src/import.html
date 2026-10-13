@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import YT Curated Feed Backup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
+      --border: #333; --accent: #ff3447; --text: #f1f1f1; --muted: #aaa;
+    }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: var(--bg); color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    main {
+      width: min(560px, calc(100vw - 32px)); padding: 28px;
+      border: 1px solid var(--border); border-radius: 14px; background: var(--surface);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .logo { display: block; width: 34px; height: 34px; }
+    h1 { margin: 0; font-size: 20px; }
+    p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .drop-zone {
+      margin-top: 20px; padding: 36px 20px; text-align: center;
+      border: 1px dashed #555; border-radius: 10px; background: var(--surface2);
+      transition: border-color .15s, background .15s;
+    }
+    .drop-zone.dragging { border-color: var(--accent); background: #2b1b1b; }
+    .drop-title { font-weight: 700; margin-bottom: 8px; }
+    .drop-hint { color: var(--muted); font-size: 12px; margin-bottom: 18px; }
+    button {
+      border: 0; border-radius: 8px; padding: 10px 18px;
+      font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .primary { background: var(--accent); color: white; }
+    .secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .status {
+      display: none; margin-top: 18px; padding: 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-size: 13px; line-height: 1.45;
+    }
+    .status.visible { display: block; }
+    .status.success { border-color: #265c3c; background: #12251a; color: #94d6ad; }
+    .status.error { border-color: #653535; background: #2a1515; color: #f2a3a3; }
+    .actions { display: none; gap: 10px; margin-top: 18px; }
+    .actions.visible { display: flex; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <img class="logo" src="../icons/icon48.png" alt="" />
+      <h1>Import backup</h1>
+    </div>
+    <p>
+      Choose a YT Curated Feed JSON backup. Importing restores its cached channel
+      list, selected channels, metadata, and feed preferences.
+    </p>
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-title">Drop your backup here</div>
+      <div class="drop-hint">or select the JSON file from your computer</div>
+      <button class="primary" id="btn-choose">Choose backup</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden />
+    </div>
+    <div class="status" id="status" role="status"></div>
+    <div class="actions" id="actions">
+      <button class="primary" id="btn-open-feed">Open feed</button>
+      <button class="secondary" id="btn-close">Close</button>
+    </div>
+  </main>
+  <script src="import.js"></script>
+</body>
+</html>

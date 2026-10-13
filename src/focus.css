@@ -1,0 +1,132 @@
+/*
+ * focus.css — distraction hiding, keyed by classes focus.js sets on <html>.
+ * Selectors verified against live YouTube on 2026-10-12. Prefer structural
+ * hooks (tag names, hrefs) over translated text; the few English-only
+ * fallbacks (guide "Shorts" title) are marked.
+ */
+
+/* Shorts: shelves, grid items, search lockups, guide entries. /shorts/ URLs
+   are redirected to the normal player by focus.js. */
+html.ytcf-hide-shorts ytd-reel-shelf-renderer,
+html.ytcf-hide-shorts ytd-rich-shelf-renderer[is-shorts],
+html.ytcf-hide-shorts ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.ytcf-hide-shorts grid-shelf-view-model:has(ytm-shorts-lockup-view-model),
+html.ytcf-hide-shorts ytm-shorts-lockup-view-model,
+html.ytcf-hide-shorts ytd-rich-item-renderer:has(a[href^="/shorts/"]),
+html.ytcf-hide-shorts ytd-video-renderer:has(a[href^="/shorts/"]),
+html.ytcf-hide-shorts ytd-grid-video-renderer:has(a[href^="/shorts/"]),
+html.ytcf-hide-shorts yt-lockup-view-model:has(a[href^="/shorts/"]),
+html.ytcf-hide-shorts yt-tab-shape[tab-title="Shorts"],
+/* English-only: the guide's Shorts entry has no href. */
+html.ytcf-hide-shorts ytd-guide-entry-renderer:has(a[title="Shorts"]),
+html.ytcf-hide-shorts ytd-mini-guide-entry-renderer[aria-label="Shorts"] {
+  display: none !important;
+}
+
+/* Watch page: recommended videos column. */
+html.ytcf-hide-related #related,
+html.ytcf-hide-related ytd-watch-next-secondary-results-renderer {
+  display: none !important;
+}
+
+/* With recommendations gone the right column is usually empty: drop it
+   (unless it holds a playlist or open live chat) and centre the video,
+   capped so player and title fit the viewport. YouTube sizes the player
+   from #primary, so it follows. */
+html.ytcf-hide-related ytd-watch-flexy:not([theater]):not([fullscreen]) #secondary:not(:has(ytd-playlist-panel-renderer:not([hidden]))):not(:has(ytd-live-chat-frame:not([collapsed]))) {
+  display: none !important;
+}
+html.ytcf-hide-related ytd-watch-flexy:not([theater]):not([fullscreen]):not(:has(#secondary ytd-playlist-panel-renderer:not([hidden]))):not(:has(#secondary ytd-live-chat-frame:not([collapsed]))) #primary {
+  max-width: max(640px, calc((100vh - 200px) * 16 / 9)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* End-of-video wall, fullscreen "more videos" grid, autoplay countdown. */
+html.ytcf-hide-endscreen .html5-endscreen,
+html.ytcf-hide-endscreen .ytp-endscreen-content,
+html.ytcf-hide-endscreen .ytp-fullscreen-grid,
+html.ytcf-hide-endscreen .ytp-autonav-endscreen,
+html.ytcf-hide-endscreen .ytp-endscreen-previous,
+html.ytcf-hide-endscreen .ytp-endscreen-next {
+  display: none !important;
+}
+
+/* Creator end cards and info cards over the video. */
+html.ytcf-hide-end-cards .ytp-ce-element,
+html.ytcf-hide-end-cards .ytp-cards-teaser,
+html.ytcf-hide-end-cards .ytp-cards-button,
+html.ytcf-hide-end-cards .iv-branding {
+  display: none !important;
+}
+
+html.ytcf-hide-comments ytd-comments#comments,
+html.ytcf-hide-comments ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"] {
+  display: none !important;
+}
+
+/* Live chat: page-main.js collapses it through YouTube so the player gets the
+   space back; this hides the leftover "Show chat" button and any frame that
+   renders before the collapse lands. */
+html.ytcf-hide-live-chat #chat-container,
+html.ytcf-hide-live-chat ytd-live-chat-frame {
+  display: none !important;
+}
+
+/* Mixes (auto-generated endless playlists). */
+html.ytcf-hide-mixes ytd-radio-renderer,
+html.ytcf-hide-mixes ytd-compact-radio-renderer,
+html.ytcf-hide-mixes ytd-rich-item-renderer:has(a[href*="start_radio=1"]),
+html.ytcf-hide-mixes yt-lockup-view-model:has(a[href*="start_radio=1"]) {
+  display: none !important;
+}
+
+html.ytcf-hide-merch ytd-merch-shelf-renderer,
+html.ytcf-hide-merch ytd-ticket-shelf-renderer,
+html.ytcf-hide-merch ytd-offer-module-renderer,
+html.ytcf-hide-merch #merch-shelf,
+html.ytcf-hide-merch #ticket-shelf,
+html.ytcf-hide-merch #offer-module {
+  display: none !important;
+}
+
+html.ytcf-hide-fundraiser ytd-donation-shelf-renderer,
+html.ytcf-hide-fundraiser #donation-shelf {
+  display: none !important;
+}
+
+html.ytcf-hide-playlist ytd-playlist-panel-renderer#playlist {
+  display: none !important;
+}
+
+/* Guide sections, matched by the links they contain. */
+html.ytcf-hide-explore ytd-guide-section-renderer:has(a[href^="/feed/storefront"]),
+html.ytcf-hide-explore ytd-guide-section-renderer:has(a[href^="/feed/trending"]),
+html.ytcf-hide-explore ytd-guide-section-renderer:has(a[href^="/feed/explore"]),
+html.ytcf-hide-explore ytd-mini-guide-entry-renderer:has(a[href^="/feed/explore"]) {
+  display: none !important;
+}
+
+html.ytcf-hide-more-from-you-tube ytd-guide-section-renderer:has(a[href="/premium"]),
+html.ytcf-hide-more-from-you-tube ytd-guide-section-renderer:has(a[href^="https://music.youtube.com"]) {
+  display: none !important;
+}
+
+html.ytcf-hide-notifications ytd-notification-topbar-button-renderer {
+  display: none !important;
+}
+
+/* Search: injected shelves ("People also watched", "For you", ...). The
+   ordinary result list stays. */
+html.ytcf-hide-search-shelves ytd-search ytd-shelf-renderer,
+html.ytcf-hide-search-shelves ytd-search ytd-horizontal-card-list-renderer,
+html.ytcf-hide-search-shelves ytd-search ytd-reel-shelf-renderer,
+html.ytcf-hide-search-shelves ytd-search grid-shelf-view-model {
+  display: none !important;
+}
+
+/* Homepage takeover (content.js sets ytcf-home-full on the home route):
+   YouTube's recommendation grid goes, the curated feed fills the page. */
+html.ytcf-home-full ytd-browse[page-subtype="home"] {
+  display: none !important;
+}

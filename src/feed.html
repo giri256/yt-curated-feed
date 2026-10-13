@@ -12,7 +12,7 @@
       --surface:   #1a1a1a;
       --surface2:  #222;
       --border:    #2e2e2e;
-      --accent:    #ff0000;
+      --accent:    #ff3447;
       --accent2:   #ff4444;
       --text:      #f1f1f1;
       --muted:     #aaaaaa;
@@ -45,12 +45,9 @@
       text-decoration: none;
     }
     .topbar-logo-badge {
-      background: var(--accent);
-      color: #fff;
-      border-radius: 6px;
-      padding: 3px 7px;
-      font-size: 13px;
-      font-weight: 900;
+      display: block;
+      width: 26px;
+      height: 26px;
     }
     .topbar-meta {
       font-size: 12px; color: var(--muted);
@@ -171,6 +168,24 @@
       font-size: 9px; font-weight: 700;
     }
 
+    .feed-notice {
+      display: none;
+      margin: 14px 24px 0;
+      padding: 10px 12px;
+      border: 1px solid #5a4520;
+      border-radius: 8px;
+      background: #231c10;
+      color: #e8c57b;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .feed-notice.visible { display: block; }
+    .feed-notice.info {
+      border-color: #29445c;
+      background: #111d28;
+      color: #9cc9eb;
+    }
+
     /* ── Main content ── */
     .main { max-width: 1400px; margin: 0 auto; padding: 24px 24px 60px; }
 
@@ -197,6 +212,17 @@
       text-decoration: none;
       color: inherit;
       display: block;
+      position: relative;
+    }
+    .video-card.opened {
+      opacity: 0.52;
+      filter: grayscale(0.88) saturate(0.25);
+    }
+    .video-card.opened::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(105,105,105,0.18);
+      pointer-events: none;
     }
     .video-card:hover {
       transform: translateY(-3px);
@@ -314,7 +340,7 @@
 <!-- Top bar -->
 <div class="topbar">
   <a class="topbar-logo" href="https://www.youtube.com" target="_blank">
-    <span class="topbar-logo-badge">YT</span>
+    <img class="topbar-logo-badge" src="../icons/icon48.png" alt="" />
     Curated Feed
   </a>
   <div class="topbar-meta" id="topbar-meta">Loading…</div>
@@ -341,6 +367,8 @@
   <!-- pills injected by JS -->
 </div>
 
+<div class="feed-notice" id="feed-notice" role="status"></div>
+
 <!-- Main content -->
 <div class="main">
   <div class="section-heading" id="section-heading" style="display:none">
@@ -356,6 +384,6 @@
   </div>
 </div>
 
-<script src="feed.js" onerror="this.src='src/feed.js'"></script>
+<script src="feed.js"></script>
 </body>
 </html>

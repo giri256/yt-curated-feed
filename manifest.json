@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "YT Curated Feed",
-  "version": "2.0.0",
-  "description": "Your YouTube feed — only from channels you chose, videos from the past 7 days.",
+  "version": "2.1.0",
+  "minimum_chrome_version": "111",
+  "description": "Your YouTube homepage, only the channels you chose. Hide Shorts, autoplay and recommendations. Works with watch history off.",
   "permissions": [
     "storage",
     "tabs",
-    "scripting"
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
     "https://www.youtube.com/*",
@@ -27,13 +28,24 @@
   },
   "content_scripts": [
     {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["src/focus.js"],
+      "css": ["src/focus.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["src/page-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
       "matches": [
-        "https://www.youtube.com/",
-        "https://www.youtube.com/?*"
+        "https://www.youtube.com/*"
       ],
       "js": ["src/content.js"],
       "css": ["src/content.css"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     },
     {
       "matches": [
@@ -42,12 +54,17 @@
       ],
       "js": ["src/channels-scraper.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["src/watch-tracker.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/feed.html", "src/feed.js", "icons/*.png"],
-      "matches": ["<all_urls>"]
+      "resources": ["src/feed.html", "src/feed.js", "src/stats.html", "src/stats.js", "icons/*.png"],
+      "matches": ["https://www.youtube.com/*"]
     }
   ],
   "icons": {

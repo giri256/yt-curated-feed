@@ -4,4 +4,26 @@
 #ytcf-host {
   all: initial;
   display: block;
+  box-sizing: border-box;
+  /* ytd-page-manager is a flex row: take a full row of our own, so the feed
+     spans the page (full mode) or sits above YouTube's grid (panel mode). */
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Outer-document rules beat :host rules, so the host's own box lives here. */
+#ytcf-host[mode="full"] {
+  background: #0f0f0f;
+  min-height: calc(100vh - 56px);
+  padding: 20px 24px 48px;
+}
+
+#ytcf-host[mode="panel"] {
+  padding: 24px 24px 0;
+}
+
+ytd-page-manager:has(> #ytcf-host) {
+  flex-wrap: wrap;
+  align-content: flex-start;
 }

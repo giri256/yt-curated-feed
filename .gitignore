@@ -1,0 +1,6 @@
+dist/
+tmpdir/
+# Local working notes and personal data: never published
+PROJECT_LOG.md
+*-backup-*.json
+*.zip
