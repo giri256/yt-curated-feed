@@ -31,7 +31,7 @@ let watchRefreshTimer = null;
 let watchLimitSaving = false;
 let openedVideoIds = new Set();
 let preferences = {
-  videoTypeFilters: { standard: true, shorts: true, live: false, other: true },
+  videoTypeFilters: { standard: true, shorts: false, live: false, other: true },
 };
 
 const RING_CIRCUMFERENCE = 2 * Math.PI * 72;
@@ -949,13 +949,21 @@ const FOCUS_OPTIONS = [
   ['While watching', [
     ['hideComments', 'Hide comments', ''],
     ['hideLiveChat', 'Hide live chat', 'Collapses chat so the video takes the full width.'],
-    ['hideEndCards', 'Hide end cards', 'Creator cards over the last seconds of a video.'],
+    ['hideVideoSidebar', 'Hide video sidebar', 'Hide the entire right-hand column, including related videos, chat and playlists.'],
+    ['hideVideoInfo', 'Hide video details', 'Views and upload date.'],
+    ['hideVideoButtonsBar', 'Hide like/share toolbar', 'Like, dislike, share and other video actions.'],
+    ['hideChannel', 'Hide channel row', 'Channel avatar, name and Subscribe button.'],
+    ['hideDescription', 'Hide description', 'Video description under the player.'],
+    ['hideAnnotations', 'Hide annotations', 'Legacy annotation overlays in the player.'],
+    ['hideEndCards', 'Hide end cards', 'Creator cards over the last seconds of a video.']
     ['hidePlaylist', 'Hide playlist panel', ''],
     ['hideMerch', 'Hide merch, tickets & offers', ''],
     ['hideFundraiser', 'Hide fundraisers', ''],
   ]],
   ['Menus', [
-    ['hideExplore', 'Hide Explore / Trending', 'Guide sidebar section.'],
+    ['hideTopHeader', 'Hide YouTube header', 'Top logo, search and account bar.'],
+    ['hideSubscriptions', 'Hide/redirect Subscriptions', 'Returns the Subscriptions page to your curated homepage.'],
+    ['hideExplore', 'Hide Explore / Trending', 'Guide sidebar section.']
     ['hideMoreFromYouTube', 'Hide "More from YouTube"', 'Premium, Music, Kids links.'],
     ['hideNotifications', 'Hide notification bell', ''],
   ]],
