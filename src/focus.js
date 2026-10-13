@@ -27,6 +27,14 @@
     hideMoreFromYouTube: false,
     hideNotifications: false,
     hideSearchShelves: false,
+    hideVideoSidebar: false,
+    hideVideoInfo: false,
+    hideVideoButtonsBar: false,
+    hideChannel: false,
+    hideDescription: false,
+    hideAnnotations: false,
+    hideTopHeader: false,
+    hideSubscriptions: false,
   };
 
   const root = document.documentElement;
@@ -42,6 +50,16 @@
     if (id) location.replace(`/watch?v=${id}`);
   }
 
+  function redirectSubscriptions() {
+    if (!focus.hideSubscriptions) return;
+    if (/^\/feed\/subscriptions\/?$/.test(location.pathname)) location.replace('/');
+  }
+
+  function handleNavigation() {
+    redirectShorts();
+    redirectSubscriptions();
+  }
+
   function apply(preferences = {}) {
     focus = { ...FOCUS_DEFAULTS, ...(preferences.focus ?? {}) };
     for (const key of Object.keys(FOCUS_DEFAULTS)) {
@@ -50,12 +68,12 @@
     root.setAttribute('data-ytcf-hide-chat', focus.hideLiveChat ? '1' : '0');
     root.setAttribute('data-ytcf-no-autoplay', focus.disableAutoplay ? '1' : '0');
     root.setAttribute('data-ytcf-quality', preferences.preferredQuality || 'auto');
-    redirectShorts();
+    handleNavigation();
   }
 
   chrome.storage.local.get('preferences', (result) => apply(result?.preferences ?? {}));
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.preferences) apply(changes.preferences.newValue ?? {});
   });
-  document.addEventListener('yt-navigate-finish', redirectShorts);
+  document.addEventListener('yt-navigate-finish', handleNavigation);
 })();

@@ -1,6 +1,6 @@
 {
   "name": "yt-curated-feed",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Chrome extension: your YouTube homepage, only the channels you chose (no bundler, zero dependencies)",
   "license": "MIT",
   "repository": "github:giri256/yt-curated-feed",

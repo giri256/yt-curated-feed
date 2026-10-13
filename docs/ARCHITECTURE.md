@@ -1,6 +1,6 @@
 # YT Curated Feed architecture and maintenance guide
 
-This document describes the current source tree as inspected on 2026-10-13 (v2.1.0). It
+This document describes the current source tree as inspected on 2026-10-13 (v2.2.0). It
 is intended to give maintainers and future AI sessions enough context to make a
 change without reverse-engineering the whole extension again.
 
@@ -39,7 +39,7 @@ the video feed depends on an undocumented availability/rate-limit envelope.
 | `src/feed.html` / `src/feed.js` | Extension page | Full-page feed, filters, search, sorting and refresh |
 | `src/content.js` / `src/content.css` | YouTube pages (`document_start`) | Homepage takeover (full) or compact panel in Shadow DOM, filters, sorting and SPA route lifecycle |
 | `src/watch-tracker.js` | Every YouTube page | Active watch/Shorts playback accounting and daily-limit blocking overlay |
-| `src/focus.js` / `src/focus.css` | Every YouTube page (isolated, `document_start`) | Focus-tool classes on `<html>`, hiding rules, Shorts redirect |
+| `src/focus.js` / `src/focus.css` | Every YouTube page (isolated, `document_start`) | Focus-tool classes on `<html>`, hiding rules, Shorts redirect, watch-page hide rules and Subscriptions redirect |
 | `src/page-main.js` | Every YouTube page (MAIN world, `document_start`) | Live-chat collapse, autoplay off, video-quality pin via YouTube's own APIs |
 | `src/welcome.html` | Extension page | First-run page opened by `runtime.onInstalled` |
 | `src/stats.html` / `src/stats.js` | Extension page | Daily/weekly watch-time report and limit editor |

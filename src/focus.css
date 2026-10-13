@@ -29,6 +29,11 @@ html.ytcf-hide-related ytd-watch-next-secondary-results-renderer {
   display: none !important;
 }
 
+/* Whole sidebar is independent from hiding only recommendation cards. */
+html.ytcf-hide-video-sidebar ytd-watch-flexy #secondary {
+  display: none !important;
+}
+
 /* With recommendations gone the right column is usually empty: drop it
    (unless it holds a playlist or open live chat) and centre the video,
    capped so player and title fit the viewport. YouTube sizes the player
@@ -62,6 +67,37 @@ html.ytcf-hide-end-cards .iv-branding {
 
 html.ytcf-hide-comments ytd-comments#comments,
 html.ytcf-hide-comments ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"] {
+  display: none !important;
+}
+
+/* Video metadata and action controls can be hidden independently. */
+html.ytcf-hide-video-info ytd-watch-metadata #info,
+html.ytcf-hide-video-info ytd-video-primary-info-renderer #info-container,
+html.ytcf-hide-video-info ytd-watch-metadata #info-container {
+  display: none !important;
+}
+
+html.ytcf-hide-video-buttons-bar ytd-watch-metadata #actions,
+html.ytcf-hide-video-buttons-bar ytd-watch-metadata #top-level-buttons-computed,
+html.ytcf-hide-video-buttons-bar ytd-video-primary-info-renderer #menu-container {
+  display: none !important;
+}
+
+html.ytcf-hide-channel ytd-watch-metadata #owner,
+html.ytcf-hide-channel ytd-video-primary-info-renderer #owner,
+html.ytcf-hide-channel ytd-video-owner-renderer {
+  display: none !important;
+}
+
+html.ytcf-hide-description ytd-watch-metadata #description,
+html.ytcf-hide-description ytd-video-secondary-info-renderer #description,
+html.ytcf-hide-description ytd-text-inline-expander#description-inline-expander {
+  display: none !important;
+}
+
+html.ytcf-hide-annotations .annotation,
+html.ytcf-hide-annotations .ytp-annotation,
+html.ytcf-hide-annotations ytp-annotation {
   display: none !important;
 }
 
@@ -113,6 +149,19 @@ html.ytcf-hide-more-from-you-tube ytd-guide-section-renderer:has(a[href^="https:
 }
 
 html.ytcf-hide-notifications ytd-notification-topbar-button-renderer {
+  display: none !important;
+}
+
+html.ytcf-hide-top-header #masthead-container,
+html.ytcf-hide-top-header ytd-masthead,
+html.ytcf-hide-top-header #masthead {
+  display: none !important;
+}
+
+html.ytcf-hide-subscriptions ytd-guide-entry-renderer:has(a[href^="/feed/subscriptions"]),
+html.ytcf-hide-subscriptions ytd-mini-guide-entry-renderer:has(a[href^="/feed/subscriptions"]),
+html.ytcf-hide-subscriptions ytd-guide-entry-renderer:has(a[title="Subscriptions"]),
+html.ytcf-hide-subscriptions ytd-mini-guide-entry-renderer:has(a[title="Subscriptions"]) {
   display: none !important;
 }
 
