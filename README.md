@@ -5,8 +5,8 @@
 <h1 align="center">YT Curated Feed</h1>
 
 <p align="center">
-  <b>Your YouTube homepage, showing only the channels you chose.</b><br />
-  No algorithm. No Shorts spiral. No autoplay chain. Works with watch history off.
+  <b>Your YouTube homepage. Only the channels you chose.</b><br />
+  Get the video you came for. Break the endless-scroll loop.
 </p>
 
 <p align="center">
@@ -14,147 +14,127 @@
   <img alt="Zero dependencies" src="https://img.shields.io/badge/dependencies-0-ff3447" />
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-1c1f28" />
   <img alt="No servers" src="https://img.shields.io/badge/servers-none-1c1f28" />
-  <img alt="No tracking" src="https://img.shields.io/badge/tracking-none-1c1f28" />
+  <img alt="No telemetry" src="https://img.shields.io/badge/telemetry-none-1c1f28" />
 </p>
 
 <p align="center">
-  <img src="docs/images/hero.png" alt="YT Curated Feed replacing the YouTube homepage with a feed of chosen channels" />
+  <img src="docs/images/hero.png" alt="YT Curated Feed replacing YouTube's homepage with recent uploads from channels you chose" />
 </p>
 
-YouTube's homepage is built to keep you watching: recommendations, Shorts,
-autoplay and the end-of-video wall exist to maximise watch time, not your goals.
-You open YouTube for one lecture and surface two hours later.
+You open YouTube for one lecture. Autoplay offers another video. The sidebar offers ten more. Shorts turn a five-minute break into an hour—and the reason you opened YouTube gets lost.
 
-**YT Curated Feed** gives you the homepage back. It shows the last 7 days of
-uploads from the channels *you* picked, newest first, and switches off the
-loops that pull you in. It is free, fully open source, has zero dependencies,
-and talks to nobody but YouTube.
+**YT Curated Feed flips the default.** The Home page becomes a channel-first feed of recent uploads from sources you explicitly selected, newest first. Then you choose which distractions to remove. Less time being pulled around; more control over what you came to watch.
 
-## Why it exists
+## Built for focused viewing
 
-- **Students** who need one lecture, not a rabbit hole.
-- **Anyone fighting procrastination** and "one more video" loops.
-- **People who want their subscriptions back**, in order, without a
-  recommendation engine deciding what they see.
+- **Students and learners:** go straight to your lectures, course channels and explainers instead of wandering through recommendations.
+- **Anyone fighting procrastination:** interrupt the “one more video” loop by removing the prompts that keep it going.
+- **People who want control back:** see what your chosen channels uploaded, in order, without a recommendation engine deciding which sources enter this feed.
 
-## Features
+## What you get
 
 | | |
 |---|---|
-| **Your homepage, your channels** | Full-page takeover of youtube.com with new uploads from the channels you selected (import your subscriptions in one click, or add any channel by @handle). A compact panel above YouTube's own grid is one click away for enthusiasts. |
-| **Works with watch history off** | Pause YouTube watch history and YouTube's homepage goes blank; your feed replaces it. YouTube stops profiling you and you still get a great homepage. |
-| **Focus tools** | Hide Shorts (Shorts links open in the normal player), turn off autoplay, hide the end-of-video wall, recommendations, Mixes, search shelves, comments, live chat (properly collapsed, so the video gets the full width), end cards, playlist panel, merch, fundraisers, Explore/Trending, "More from YouTube" and the notification bell. |
-| **Pin video quality** | Every video starts at the quality you choose (or the closest one it has). Picking another quality in the player still works. |
-| **Watch-time dashboard** | Today, this week, a seven-day rhythm, and an optional daily limit that steps in when the allowance is used. |
-| **Fast and resilient** | ~50 channels load in a few seconds and refresh in under one. If YouTube's RSS endpoint fails, the extension falls back to YouTube's own InnerTube API instead of dropping the channel. |
-| **Private** | No account linking, no OAuth, no API keys, no analytics, no servers. Everything is stored in your browser. |
+| **A homepage with boundaries** | The default full-page mode replaces YouTube's recommended Home grid with uploads from your selected channels from the last seven days, newest first. Import subscriptions in one click or add any channel by `@handle`. Prefer the original Home grid? Switch to the optional compact panel. |
+| **Works with watch history paused** | The curated feed does not depend on your watch history. Pausing history may remove YouTube's own Home recommendations, while your channel feed continues to work. This limits one source of personalization; it does not disable every form of Google or YouTube data processing. |
+| **Individual focus controls** | Hide Shorts (their links open in the regular player), disable autoplay, remove the end-screen suggestion wall, hide the entire video sidebar or only related videos, comments, live chat, video details, the action bar, channel row, description, annotations, end cards, Mixes, search shelves, playlist panel, merch, offers and fundraisers. You can also hide Explore/Trending, the top header, notification bell, “More from YouTube,” and hide/redirect the Subscriptions page. Live chat is collapsed through YouTube's own handler so the player can reclaim its width. |
+| **Pin video quality** | Choose Auto, 144p, 240p, 360p, 480p, 720p, 1080p, 1440p or 4K. The extension picks the closest available level, and you can still change quality manually in the player. |
+| **A local watch-time dashboard** | See today's total, your weekly pattern and the last seven days. Set an optional daily limit that steps in when you reach it. Your totals stay in local browser storage. |
+| **Fast, resilient feeds** | In the developer's tests, a cold feed of around 50 channels loaded in about 4–5 seconds; a cached refresh was under one second. Actual speeds depend on YouTube and your connection. If RSS fails for a channel, the extension can fall back to YouTube's own InnerTube endpoint. |
+| **No developer backend** | No account linking to this extension, OAuth, API keys, analytics or developer server. Your settings and watch-time totals are stored locally. Requests for public channel/video data go to YouTube and its thumbnail host, without your YouTube cookies. |
 
 <p align="center">
-  <img src="docs/images/history-off.png" width="49%" alt="With watch history paused, YouTube's homepage is blank; YT Curated Feed fills it" />
-  <img src="docs/images/watch.png" width="49%" alt="A calm watch page with recommendations and autoplay removed" />
-  <img src="docs/images/focus.png" width="49%" alt="Focus tools in the extension popup" />
-  <img src="docs/images/time.png" width="49%" alt="Watch-time dashboard with a daily limit" />
+  <img src="docs/images/history-off.png" width="49%" alt="YouTube with watch history paused next to the YT Curated Feed homepage" />
+  <img src="docs/images/watch.png" width="49%" alt="A YouTube watch page with distraction controls enabled" />
+  <img src="docs/images/focus.png" width="49%" alt="Focus controls in the extension popup" />
+  <img src="docs/images/time.png" width="49%" alt="Local watch-time dashboard with an optional daily limit" />
 </p>
 
-### Versus YouTube's "Custom Feeds"
+## YouTube Custom Feeds vs. a feed you control
 
-YouTube announced prompt-based Custom Feeds in 2026. They are a welcome
-experiment, but they are a different thing:
+YouTube's Custom Feeds let you describe a mood, routine or topic and generate a dedicated, refreshing feed. That can be useful for discovery—but it remains a prompt-led experience shaped by YouTube. **YT Curated Feed lets you choose the channels yourself.** Its feed is built from their recent uploads, not from your prompt.
 
 | | YouTube Custom Feeds | YT Curated Feed |
 |---|---|---|
-| Who picks the videos | YouTube's algorithm, from your prompt | You, by channel |
-| Watch history | Must be on | Works with it off |
-| Availability | Rolling out, US first | Everywhere, today |
-| Shorts, autoplay, end screens | Still there | Off with one toggle |
+| What you choose | A prompt that shapes a dedicated feed | The specific channels allowed into your feed |
+| Watch/search history | Requires watch and search history enabled | Works with watch history paused |
+| Availability | YouTube's experiment is rolling out to signed-in US viewers in English | Install in a supported Chromium browser |
+| Focus controls | YouTube's viewing experience | Independent controls for Shorts, autoplay, live chat, related videos and more |
+
+YouTube's [official Custom Feeds announcement](https://support.google.com/youtube/blog/436892232/introducing-a-new-discovery-experience-designed-by-you?hl=en) says the experiment currently requires watch and search history to be on and is rolling out to signed-in viewers in the US in English. Rollout details can change, so check the announcement for current eligibility.
 
 ## Install
 
-**From source (developer mode):**
+**Load the ready-to-use source tree:**
 
-1. Download this repository (`Code → Download ZIP`) or a
-   [release](https://github.com/giri256/yt-curated-feed/releases) and unzip it.
-2. Open `chrome://extensions` (also works in Brave, Edge and other Chromium
-   browsers, version 111+).
-3. Turn on **Developer mode** (top right).
-4. Click **Load unpacked** and pick the folder that contains `manifest.json`.
+1. Download the repository with `Code → Download ZIP` or choose a [release](https://github.com/giri256/yt-curated-feed/releases).
+2. Open `chrome://extensions` in Chrome, Brave, Edge or another supported Chromium browser (version 111+).
+3. Turn on **Developer mode**.
+4. Click **Load unpacked** and select the folder that contains `manifest.json`.
 
-No build step, no `npm install`.
+No build step and no `npm install` are needed to load the source tree.
 
-## Use
+## Get started
 
-1. Click the extension icon → **Channels** → **Load my subscriptions** (or **+**
-   to add a channel by @handle).
-2. Tick the channels you actually want and **Save**.
-3. Open youtube.com. Your homepage is now your feed.
-4. Open **Focus** in the popup to switch off Shorts, autoplay and the rest, pick
-   the homepage mode (full page or compact panel), and pin a video quality.
+1. Click the extension icon → **Channels** → **Load my subscriptions**, or add a channel by `@handle`.
+2. Select the channels you actually want and save.
+3. Open YouTube. By default, your curated feed replaces the Home grid.
+4. Open **Focus** in the popup to choose what to hide, pin video quality, or switch to **Compact** to keep YouTube's own grid below the smaller feed panel.
 
-For the cleanest result, pause your watch history at
-[youtube.com/feed/history](https://www.youtube.com/feed/history).
+For the cleanest homepage, you can pause your watch history at [youtube.com/feed/history](https://www.youtube.com/feed/history). The curated feed continues to work without it. Pausing history does not disable every other kind of data processing by Google or YouTube.
 
 ## Built in the open
 
-- **Zero dependencies.** Plain JavaScript, HTML and CSS. No bundler, no
-  framework, no `node_modules` in the extension. `build.mjs` only copies files.
-- **Readable.** The whole extension is a handful of files you can audit in an
-  evening; see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
-  [`PROJECT_UNDERSTANDING.md`](PROJECT_UNDERSTANDING.md).
-- **Talks only to YouTube.** Network requests go to `www.youtube.com` (public
-  RSS feeds and the InnerTube endpoints YouTube's own site uses), sent without
-  cookies. Nothing is sent anywhere else.
-- **Tested.** `node:test` suites for the service worker and focus settings, plus
-  a real-browser smoke test in headless Brave.
+- **MIT licensed.** Use, inspect, fork and contribute under the terms in [LICENSE](LICENSE).
+- **Zero runtime dependencies.** Plain JavaScript, HTML and CSS—no framework or bundled third-party code. `build.mjs` copies the source into `dist/`.
+- **Readable and auditable.** See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`PROJECT_UNDERSTANDING.md`](PROJECT_UNDERSTANDING.md).
+- **No developer backend.** The extension fetches public channel feeds, video details and thumbnails; it does not send preferences or watch-time totals to a developer server.
+- **Tested.** Node's built-in test runner covers feed and focus behavior. An optional headless Brave smoke test checks the live YouTube endpoints.
 
 ### Permissions
 
 | Permission | Why |
 |---|---|
-| `storage` | Selected channels, preferences, watch-time totals |
-| `tabs` | Open the subscriptions page and the feed tab |
-| `declarativeNetRequestWithHostAccess` | One session rule sets `Origin: https://www.youtube.com` on the extension's own InnerTube requests (YouTube rejects a `chrome-extension://` Origin) |
-| Host `youtube.com` | Read RSS feeds, run the homepage feed and focus tools |
+| `storage` | Stores selected channels, preferences and watch-time totals locally |
+| `tabs` | Opens the subscriptions page for import and the feed page |
+| `declarativeNetRequestWithHostAccess` | Sets the `Origin: https://www.youtube.com` header on the extension's own InnerTube requests |
+| YouTube host access | Runs the curated homepage/focus controls, fetches channel/video data and loads channel avatars |
 
-## Develop
+## Development
 
 ```bash
-npm test               # node:test suites (no dependencies to install)
-npm run build          # copies the extension into dist/
-BRAVE_EXECUTABLE_PATH=/usr/bin/brave npm run smoke:browser  # real-browser check (Brave)
+npm test
+npm run build
+BRAVE_EXECUTABLE_PATH=/usr/bin/brave npm run smoke:browser
 ```
 
-Project layout:
+Key files:
 
 ```
-manifest.json          MV3 manifest (load this folder unpacked)
-src/background.js      service worker: feeds, InnerTube fallback, durations, storage, messages
-src/content.js/.css    homepage takeover (full page) or compact panel
-src/focus.js/.css      focus tools: classes on <html> + hiding rules
-src/page-main.js       MAIN-world helper: live-chat collapse, autoplay off, quality pin
-src/watch-tracker.js   watch-time accounting and daily-limit screen
-src/popup.*            popup: dashboard, channels, focus, settings, support
-src/feed.*             full-page feed tab
-src/welcome.html       first-run page
-tests/                 node:test suites
-scripts/               real-browser smoke test
+manifest.json          MV3 extension manifest
+src/background.js      feed fetching, cache, storage, messages
+src/content.js/.css    full-page homepage takeover or compact panel
+src/focus.js/.css      focus preferences, hide rules and Subscriptions redirect
+src/page-main.js       live-chat collapse, autoplay and pinned video quality
+src/watch-tracker.js   local watch-time accounting and daily-limit overlay
+src/popup.*            dashboard, channels, focus controls, settings and support
+src/welcome.html       first-run guide and support links
+tests/                 automated regression tests
+scripts/brave-smoke.mjs live YouTube/service-worker smoke test
 ```
 
-Contributions are welcome. Please open an issue first for larger changes, keep
-the extension dependency-free, and run `npm test` before sending a pull request.
+Contributions are welcome. Please open an issue before larger changes and run `npm test` before submitting a pull request.
 
-## Support the project
+## Keep it free
 
-YT Curated Feed is free, with no ads, no data selling and no premium tier. If it
-gave you some hours back:
+YT Curated Feed is free, with no ads, no premium tier and no data selling. If it helps you reclaim an evening, optional support keeps development going:
 
 - ☕ [Buy me a coffee](https://buymeacoffee.com/giri256)
-- 💳 [PayPal](https://paypal.me/kgspavan)
-- ⭐ Star the repo and tell a friend who needs their evenings back.
+- 💳 [Donate with PayPal](https://paypal.me/kgspavan)
+- ⭐ [Star the repository](https://github.com/giri256/yt-curated-feed)
 
 ## Credits and license
 
 - MIT licensed; see [LICENSE](LICENSE).
-- The video-quality pin follows the approach of
-  [YouTube Enhancer](https://github.com/YouTube-Enhancer/extension) (MIT).
-- YT Curated Feed is an independent project, not affiliated with, endorsed or
-  sponsored by YouTube or Google. YouTube is a trademark of Google LLC.
+- The video-quality pin adapts the public-player-API approach used by [YouTube Enhancer](https://github.com/YouTube-Enhancer/extension) (MIT); see the in-code credit.
+- YT Curated Feed is independent and is not affiliated with, endorsed by or sponsored by YouTube or Google. YouTube is a trademark of Google LLC.
